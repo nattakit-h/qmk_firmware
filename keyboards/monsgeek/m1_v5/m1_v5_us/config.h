@@ -55,9 +55,10 @@
 #define SYSTEM_MAC_PIN                      C14
 
 /* UART */
-#define SERIAL_DRIVER                       SD3
-#define SD1_TX_PIN                          C10
-#define SD1_RX_PIN                          C11
+#define UART_DRIVER                         SD3
+#define UART_TX_PIN                         C10
+#define UART_RX_PIN                         C11
+#define UART_RX_PAL_MODE                    7
 
 /* Encoder */
 #define ENCODER_MAP_KEY_DELAY               1
@@ -86,5 +87,6 @@
 #define EECONFIG_CONFINFO_USE_SIZE (4 + 16)
 #define EECONFIG_RGBREC_USE_SIZE   (RGBREC_CHANNEL_NUM * MATRIX_ROWS * MATRIX_COLS * 2)
 #define EECONFIG_USER_DATA_SIZE    (EECONFIG_RGBREC_USE_SIZE + EECONFIG_CONFINFO_USE_SIZE)
-#define RGBREC_EECONFIG_ADDR       (uint8_t *)(EECONFIG_USER_DATABLOCK)
-#define CONFINFO_EECONFIG_ADDR     (uint32_t *)((uint32_t)RGBREC_EECONFIG_ADDR + (uint32_t)EECONFIG_RGBREC_USE_SIZE)
+
+//#define RGBREC_EECONFIG_ADDR       (uint8_t *)(_EECONFIG_USER_DATABLOCK)
+//#define CONFINFO_EECONFIG_ADDR     (uint32_t *)((uint32_t)RGBREC_EECONFIG_ADDR + (uint32_t)EECONFIG_RGBREC_USE_SIZE)

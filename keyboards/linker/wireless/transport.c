@@ -21,7 +21,7 @@ void wls_transport_enable(bool enable) {
     if (enable) {
         if (host_get_driver() != &wireless_driver) {
             host_set_driver(&wireless_driver);
-            keyboard_protocol = true; // default with true
+            usb_device_state_set_protocol(USB_PROTOCOL_REPORT);
         }
     } else {
         if (*md_getp_state() == MD_STATE_CONNECTED) {
@@ -119,7 +119,7 @@ void usb_remote_wakeup(void) {
         /* Woken up */
     }
 #else
-    
+
     if ((USB_DRIVER.state == USB_SUSPENDED)) {
         if (!suspend_timer) suspend_timer = sync_timer_read32();
         if (sync_timer_elapsed32(suspend_timer) >= USB_POWER_DOWN_DELAY) {

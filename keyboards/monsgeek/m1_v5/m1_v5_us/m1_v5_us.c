@@ -56,6 +56,7 @@ void rgb_matrix_hs_set_remain_time(uint8_t index, uint8_t remain_time);
 #define keymap_is_base_layer() ((get_highest_layer(default_layer_state) == _BL) || (get_highest_layer(default_layer_state) == _FL))
 
 uint32_t post_init_timer     = 0x00;
+bool im_test_rate_flag       = false;
 bool inqbat_flag             = false;
 bool mac_status              = false;
 bool charging_state          = false;
@@ -368,7 +369,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case RP_P0:
         case RP_P1:
         case RP_P2:
-        case RGB_MOD:
+        case RM_NEXT:
             break;
         default: {
             if (rgbrec_is_started()) {
@@ -381,7 +382,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         } break;
     }
 
-    if (rgbrec_is_started() && (!(keycode == RP_P0 || keycode == RP_P1 || keycode == RP_P2 || keycode == RP_END || keycode == RGB_MOD || keycode == MO(_FL) || keycode == MO(_MFL)))) {
+    if (rgbrec_is_started() && (!(keycode == RP_P0 || keycode == RP_P1 || keycode == RP_P2 || keycode == RP_END || keycode == RM_NEXT || keycode == MO(_FL) || keycode == MO(_MFL)))) {
 
         return false;
     }
@@ -522,14 +523,14 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
             return false;
         } break;
-        case RGB_SPI: {
+        case RM_SPDU: {
             if (record->event.pressed) {
                 if (rgb_matrix_get_speed() >= (RGB_MATRIX_SPD_STEP * 5)) {
                     rgb_blink_dir();
                 }
             }
         } break;
-        case RGB_SPD: {
+        case RM_SPDD: {
             if (record->event.pressed) {
                 if (rgb_matrix_get_speed() <= RGB_MATRIX_SPD_STEP * 2) {
                     if (rgb_matrix_get_speed() != RGB_MATRIX_SPD_STEP)
@@ -541,14 +542,14 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 rgb_blink_dir();
             }
         } break;
-        case RGB_VAI: {
+        case RM_VALU: {
             if (record->event.pressed) {
                 rgb_matrix_enable();
                 gpio_write_pin_high(LED_POWER_EN_PIN);
                 if (rgb_matrix_get_val() != RGB_MATRIX_MAXIMUM_BRIGHTNESS) rgb_blink_dir();
             }
         } break;
-        case RGB_VAD: {
+        case RM_VALD: {
             if (record->event.pressed) {
                 if (rgb_matrix_get_val() <= RGB_MATRIX_VAL_STEP) {
                     gpio_write_pin_low(LED_POWER_EN_PIN);
@@ -559,7 +560,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (rgb_matrix_get_val() != 0) rgb_blink_dir();
             }
         } break;
-        case RGB_SAI: {
+        case RM_SATU: {
             if (record->event.pressed) {
                 uint8_t index;
                 index = record_color_hsv(true);
@@ -570,7 +571,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         } break;
-        case RGB_SAD: {
+        case RM_SATD: {
             if (record->event.pressed) {
                 uint8_t index;
                 index = record_color_hsv(false);
@@ -659,7 +660,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
             return false;
         } break;
-        case RGB_MOD: {
+        case RM_NEXT: {
             if (record->event.pressed) {
                 rgb_blink_dir();
                 if (rgb_matrix_get_mode() == RGB_MATRIX_CUSTOM_RGBR_PLAY) {
@@ -684,7 +685,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
             return false;
         } break;
-        case RGB_HUI: {
+        case RM_HUEU: {
             if (record->event.pressed) {
                 record_color_hsv(true);
             }
@@ -1292,12 +1293,11 @@ void hs_reset_settings(void) {
     eeconfig_update_rgblight_default();
     rgblight_enable();
 #endif
-
-    keymap_config.raw = eeconfig_read_keymap();
+    eeconfig_read_keymap(&keymap_config);
 
 #if defined(NKRO_ENABLE) && defined(FORCE_NKRO)
     keymap_config.nkro = 0;
-    eeconfig_update_keymap(keymap_config.raw);
+    eeconfig_update_keymap(&keymap_config);
 #endif
 
     // #if defined(WIRELESS_ENABLE)

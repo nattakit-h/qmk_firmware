@@ -5,6 +5,10 @@
 #include "rgb_matrix.h"
 #include "eeprom.h"
 
+#include <nvm/eeprom/nvm_eeprom_eeconfig_internal.h> // HACK: Include to get EECONFIG_USER_DATABLOCK
+#define RGBREC_EECONFIG_ADDR       (uint8_t *)(EECONFIG_USER_DATABLOCK)
+#define CONFINFO_EECONFIG_ADDR     (uint32_t *)((uint32_t)RGBREC_EECONFIG_ADDR + (uint32_t)EECONFIG_RGBREC_USE_SIZE)
+
 #define RGBREC_STATE_ON  1
 #define RGBREC_STATE_OFF 0
 #define RGBREC_COLOR_NUM (sizeof(rgbrec_hs_lists) / sizeof(rgbrec_hs_lists[0]))
