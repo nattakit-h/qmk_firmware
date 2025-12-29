@@ -720,7 +720,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         } break;
         case HS_BATQ: {
             extern bool rk_bat_req_flag;
-            rk_bat_req_flag = (confinfo.devs != DEVS_USB) && record->event.pressed;
+            rk_bat_req_flag = record->event.pressed;
             return false;
         } break;
         case HS_DIR: {
