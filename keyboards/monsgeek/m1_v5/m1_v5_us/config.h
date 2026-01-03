@@ -62,6 +62,8 @@
 
 /* Encoder */
 #define ENCODER_MAP_KEY_DELAY               1
+#define ENCODER_PIN_A                       B7
+#define ENCODER_PIN_B                       B6
 
 /* SPI */
 #define SPI_DRIVER                          SPIDQ
