@@ -83,7 +83,7 @@
         }
     ],
     "dynamic_keymap": {
-        "layer_count": 5
+        "layer_count": 7
     },
     "matrix_pins": {
         "cols": ["C0", "C1", "C2", "C3", "A6", "B10", "B11", "B12", "B13", "B14", "A10", "C6", "C7", "C8", "C9"],
@@ -226,9 +226,9 @@
         "val_steps": 26,
         "speed_steps": 51,
         "default": {
-            "animation": "cycle_left_right",
-            "val" :104,
-            "speed" :255
+            "animation": "solid_color",
+            "val": 1,
+            "speed": 255
         },
         "sleep": true
     },
