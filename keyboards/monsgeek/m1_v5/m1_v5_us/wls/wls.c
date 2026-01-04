@@ -88,9 +88,9 @@ void lpwr_exti_init_hook(void) {
     waitInputPinDelay();
     palEnableLineEvent(HS_BAT_CABLE_PIN, PAL_EVENT_MODE_RISING_EDGE);
 
-    setPinInput(ENCODER_PIN_A);
+    setPinInput(ENCODER_A_PIN);
     waitInputPinDelay();
-    palEnableLineEvent(ENCODER_PIN_A, PAL_EVENT_MODE_RISING_EDGE);
+    palEnableLineEvent(ENCODER_A_PIN, PAL_EVENT_MODE_RISING_EDGE);
 }
 
 void palcallback_cb(uint8_t line) {
