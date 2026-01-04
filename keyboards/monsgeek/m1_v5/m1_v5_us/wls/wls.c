@@ -76,14 +76,13 @@ bool hs_rgb_blink_hook() {
 
 void lpwr_exti_init_hook(void) {
     if (lower_sleep) {
-#if DIODE_DIRECTION == ROW2COL
+        // ROW2COL
         for (uint8_t i = 0; i < ARRAY_SIZE(col_pins); i++) {
             if (col_pins[i] != NO_PIN) {
                 setPinOutput(col_pins[i]);
                 writePinHigh(col_pins[i]);
             }
         }
-#endif
     }
     setPinInput(HS_BAT_CABLE_PIN);
     waitInputPinDelay();

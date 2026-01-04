@@ -4,12 +4,9 @@
 #include QMK_KEYBOARD_H
 #include "wls/wls.h"
 #include "rgb_record/rgb_record.h"
-
-#ifdef WIRELESS_ENABLE
-#    include "wireless.h"
-#    include "usb_main.h"
-#    include "lowpower.h"
-#endif
+#include "wireless.h"
+#include "usb_main.h"
+#include "lowpower.h"
 
 typedef union {
     uint32_t raw;
@@ -133,13 +130,9 @@ void keyboard_post_init_kb(void) {
     setPinInputHigh(SYSTEM_WIN_PIN);
     setPinInputHigh(SYSTEM_MAC_PIN);
 
-#ifdef WIRELESS_ENABLE
     wireless_init();
-#    if (!(defined(HS_BT_DEF_PIN) && defined(HS_2G4_DEF_PIN)))
     wireless_devs_change(!confinfo.devs, confinfo.devs, false);
-#    endif
     post_init_timer = timer_read32();
-#endif
 
     keyboard_post_init_user();
 
@@ -147,8 +140,6 @@ void keyboard_post_init_kb(void) {
 
     start_hsv = rgb_matrix_get_hsv();
 }
-
-#ifdef WIRELESS_ENABLE
 
 void usb_power_connect(void) {
 
@@ -325,7 +316,6 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
 
     return false;
 }
-#endif
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
@@ -921,9 +911,6 @@ void housekeeping_task_user(void) { // loop
     }
 }
 
-#ifdef RGB_MATRIX_ENABLE
-
-#    ifdef WIRELESS_ENABLE
 bool wls_rgb_indicator_reset        = false;
 uint32_t wls_rgb_indicator_timer    = 0x00;
 uint32_t wls_rgb_indicator_interval = 0;
@@ -1113,10 +1100,6 @@ void bat_indicators(void) {
     }
 }
 
-#    endif
-
-#endif
-
 void rgb_blink_dir(void) {
     rgb_matrix_hs_indicator_set(0xFF, (RGB){0, 0, 0}, 250, 1);
 }
@@ -1228,7 +1211,6 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
     if (!keymap_is_mac_system() && keymap_config.no_gui)
         rgb_matrix_set_color(HS_RGB_INDEX_WIN_LOCK, 0x20, 0x20, 0x20);
 
-#ifdef WIRELESS_ENABLE
     rgb_matrix_wls_indicator();
 
     if (enable_bat_indicators && !inqbat_flag && !rgbrec_is_started()) {
@@ -1243,8 +1225,6 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
             bat_indicator_cnt     = timer_read32();
         }
     }
-
-#endif
 
     rgb_matrix_hs_indicator();
 
