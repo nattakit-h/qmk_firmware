@@ -276,7 +276,6 @@ void record_rgbmatrix_increase(uint8_t *last_mode) {
     }
     *last_mode = rgbmatrix_buff[index];
     rgb_matrix_mode(rgbmatrix_buff[index]);
-    //record_color_hsv(false);
     uint8_t rgb_hsv_index =  record_color_read_data();
     rgb_matrix_sethsv(rgb_hsvs[rgb_hsv_index][0], rgb_hsvs[rgb_hsv_index][1], rgb_matrix_get_val());
 }
@@ -317,13 +316,7 @@ bool rk_bat_req_flag;
 
 void query(void) {
     if (rk_bat_req_flag) {
-#ifdef RGBLIGHT_ENABLE
-        for (uint8_t i = 0; i < (RGB_MATRIX_LED_COUNT - RGBLED_NUM); i++) {
-            rgb_matrix_set_color(i, 0, 0, 0);
-        }
-#else
         rgb_matrix_set_color_all(0x00, 0x00, 0x00);
-#endif
         for (uint8_t i = 0; i < 10; i++) {
             uint8_t mi_index[10] = RGB_MATRIX_BAT_INDEX_MAP;
             if ((i < (*md_getp_bat() / 10)) || (i < 1)) {

@@ -88,16 +88,9 @@ void eeconfig_confinfo_default(void) {
     confinfo.last_btdevs      = 1;
     confinfo.dir_flag         = 0;
     confinfo.ctrl_app_flag    = 0;
-    // #ifdef WIRELESS_ENABLE
-    //     confinfo.devs = DEVS_USB;
-    // #endif
 
     eeconfig_init_user_datablock();
     eeconfig_confinfo_update(confinfo.raw);
-
-#ifdef RGBLIGHT_ENABLE
-    rgblight_mode(buff[0]);
-#endif
 }
 
 void eeconfig_confinfo_init(void) {
@@ -122,14 +115,6 @@ void keyboard_post_init_kb(void) {
 
     gpio_set_pin_output(HS_LED_BOOSTING_PIN);
     gpio_write_pin_high(HS_LED_BOOSTING_PIN);
-#endif
-
-#ifdef MM_BT_DEF_PIN
-    setPinInputHigh(MM_BT_DEF_PIN);
-#endif
-
-#ifdef MM_2G4_DEF_PIN
-    setPinInputHigh(MM_2G4_DEF_PIN);
 #endif
 
 #ifdef USB_POWER_EN_PIN
@@ -1108,7 +1093,6 @@ void bat_indicators(void) {
     } else if (charging_state) {
 
         battery_process_time = 0;
-        //rgb_matrix_set_color(HS_MATRIX_BLINK_INDEX_BAT, 0x00, 0xFF, 0x00);
     } else if (*md_getp_bat() <= BATTERY_CAPACITY_LOW) {
 
         rgb_matrix_hs_bat_set(HS_MATRIX_BLINK_INDEX_BAT, (RGB){0xFF, 0x00, 0x00}, 250, 1);
@@ -1232,12 +1216,6 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
 
         return false;
     }
-#ifdef RGBLIGHT_ENABLE
-    if (rgb_matrix_indicators_advanced_user(led_min, led_max) != true) {
-
-        return false;
-    }
-#endif
 
     if (ee_clr_timer && timer_elapsed32(ee_clr_timer) > 3000) {
         hs_reset_settings();
@@ -1249,13 +1227,6 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
 
     if (!keymap_is_mac_system() && keymap_config.no_gui)
         rgb_matrix_set_color(HS_RGB_INDEX_WIN_LOCK, 0x20, 0x20, 0x20);
-
-#ifdef RGBLIGHT_ENABLE
-    if (rgb_matrix_indicators_advanced_rgblight(led_min, led_max) != true) {
-
-        return false;
-    }
-#endif
 
 #ifdef WIRELESS_ENABLE
     rgb_matrix_wls_indicator();
@@ -1285,24 +1256,12 @@ void hs_reset_settings(void) {
     enable_bat_indicators = false;
     eeconfig_init();
     eeconfig_update_rgb_matrix_default();
-
-#ifdef RGBLIGHT_ENABLE
-    extern void rgblight_init(void);
-    is_rgblight_initialized = false;
-    rgblight_init();
-    eeconfig_update_rgblight_default();
-    rgblight_enable();
-#endif
     eeconfig_read_keymap(&keymap_config);
 
 #if defined(NKRO_ENABLE) && defined(FORCE_NKRO)
     keymap_config.nkro = 0;
     eeconfig_update_keymap(&keymap_config);
 #endif
-
-    // #if defined(WIRELESS_ENABLE)
-    //     wireless_devs_change(wireless_get_current_devs(), DEVS_USB, false);
-    // #endif
 
     if (hs_reset_settings_user() != true) {
 
