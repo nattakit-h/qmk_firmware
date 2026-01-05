@@ -51,6 +51,8 @@ void mg_state_reset(void) {
     eeconfig_update_rgb_matrix_default();
     eeconfig_read_keymap(&keymap_config);
 
+    mg_data = (mg_data_t){0};
+
 #if defined(NKRO_ENABLE)
     keymap_config.nkro = 0;
     eeconfig_update_keymap(&keymap_config);
@@ -238,9 +240,8 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
             return false;
         } break;
-        case MG_BAT: {
-            extern bool mg_indicators_battery_show;
-            mg_indicators_battery_show = record->event.pressed;
+        case MG_INFO: {
+            mg_data.show_info = record->event.pressed;
             return false;
         } break;
         default:

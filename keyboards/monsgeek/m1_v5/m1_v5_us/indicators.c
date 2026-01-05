@@ -123,15 +123,13 @@ void mg_indicators_conn(void) {
 /*                             State Indicator                               */
 /*****************************************************************************/
 
-bool mg_indicators_battery_show = false;
-const uint8_t mg_indicators_battery_indices[] = MG_INDICATORS_BAT_INDICES;
-
 void mg_indicators_state(void) {
-    if (!mg_indicators_battery_show) return;
+    extern mg_data_t mg_data;
+    if (!mg_data.show_info) return;
 
     rgb_matrix_set_color_all(0, 0, 0);
 
-    extern mg_data_t mg_data;
+    const uint8_t mg_indicators_battery_indices[] = MG_INDICATORS_BAT_INDICES;
     for (uint8_t i = 0; i < ARRAY_SIZE(mg_indicators_battery_indices); i++) {
         if ((i < (*md_getp_bat() / 10)) || (i == 0)) {
                 if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING) {

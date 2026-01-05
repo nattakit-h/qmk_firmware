@@ -16,6 +16,7 @@ typedef struct {
     uint32_t timestamp_reset;
     uint8_t  charge_state;
     bool     usb_inserted;
+    bool     show_info;
 } mg_data_t;
 
 enum mg_layers {

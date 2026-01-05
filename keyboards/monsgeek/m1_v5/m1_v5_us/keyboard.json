@@ -41,7 +41,7 @@
         {"key": "KC_BT3"},
         {"key": "KC_2G4"},
         {"key": "KC_USB"},
-        {"key": "MG_BAT"},
+        {"key": "MG_INFO"},
         {"key": "MG_TEST"},
         {"key": "MG_CT_A"}
     ],
