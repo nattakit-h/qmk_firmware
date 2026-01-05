@@ -13,12 +13,8 @@
 typedef union {
     uint32_t raw;
     struct {
-        uint8_t flag : 1;
         uint8_t devs : 3;
-        uint8_t record_channel : 4;
-        uint8_t record_last_mode;
         uint8_t last_btdevs : 3;
-        uint8_t dir_flag : 1;
         uint8_t ctrl_app_flag : 1;
     };
 } confinfo_t;
@@ -31,8 +27,6 @@ void hs_reset_settings(void);
 
 uint32_t post_init_timer     = 0x00;
 bool im_test_rate_flag       = false;
-bool inqbat_flag             = false;
-bool mac_status              = false;
 bool charging_state          = false;
 bool bat_full_flag           = false;
 bool lower_sleep             = false;
@@ -50,12 +44,7 @@ uint32_t eeconfig_confinfo_read(void) {
 }
 
 void eeconfig_confinfo_default(void) {
-
-    confinfo.flag             = true;
-    confinfo.record_channel   = 0;
-    confinfo.record_last_mode = 0xff;
     confinfo.last_btdevs      = 1;
-    confinfo.dir_flag         = 0;
     confinfo.ctrl_app_flag    = 0;
     eeconfig_confinfo_update(confinfo.raw);
 }
@@ -298,109 +287,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             extern bool mg_indicators_battery_show;
             mg_indicators_battery_show = record->event.pressed;
             return false;
-        } break;
-        case KC_A: {
-            if (confinfo.dir_flag) {
-                if (record->event.pressed) {
-                    register_code16(KC_LEFT);
-                } else {
-                    unregister_code16(KC_LEFT);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } break;
-
-        case KC_S: {
-            if (confinfo.dir_flag) {
-                if (record->event.pressed) {
-                    register_code16(KC_DOWN);
-                } else {
-                    unregister_code16(KC_DOWN);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } break;
-
-        case KC_D: {
-            if (confinfo.dir_flag) {
-                if (record->event.pressed) {
-                    register_code16(KC_RGHT);
-                } else {
-                    unregister_code16(KC_RGHT);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } break;
-
-        case KC_W: {
-            if (confinfo.dir_flag) {
-                if (record->event.pressed) {
-                    register_code16(KC_UP);
-                } else {
-                    unregister_code16(KC_UP);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } break;
-
-        case KC_LEFT: {
-            if (confinfo.dir_flag) {
-                if (record->event.pressed) {
-                    register_code16(KC_A);
-                } else {
-                    unregister_code16(KC_A);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } break;
-
-        case KC_DOWN: {
-            if (confinfo.dir_flag) {
-                if (record->event.pressed) {
-                    register_code16(KC_S);
-                } else {
-                    unregister_code16(KC_S);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } break;
-
-        case KC_RGHT: {
-            if (confinfo.dir_flag) {
-                if (record->event.pressed) {
-                    register_code16(KC_D);
-                } else {
-                    unregister_code16(KC_D);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } break;
-
-        case KC_UP: {
-            if (confinfo.dir_flag) {
-                if (record->event.pressed) {
-                    register_code16(KC_W);
-                } else {
-                    unregister_code16(KC_W);
-                }
-                return false;
-            } else {
-                return true;
-            }
         } break;
         case MG_CT_A: {
             if (record->event.pressed) {
