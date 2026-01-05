@@ -3,25 +3,20 @@
 
 #pragma once
 
-#define USB_POWER_EN_PIN                    B1 // USB ENABLE pin
-#define LED_POWER_EN_PIN                    A5 // LED ENABLE pin
-#define HS_BAT_CABLE_PIN                    A7 // USB insertion detection pin
-#define HS_LED_BOOSTING_PIN                 D2 // LED BOOSTING
+/* System */
+#define MG_USB_POWER_PIN                    B1
+#define MG_USB_INSERT_PIN                   A7
+#define MG_LED_POWER_PIN                    A5
+#define MG_LED_BOOST_PIN                    D2
+#define MG_BAT_FULL_PIN                     A15
+#define MG_USE_BAT_PIN                      C15
+#define MG_USE_MAC_PIN                      C14
 
-#define BAT_FULL_PIN                        A15
-#define BAT_FULL_STATE                      1
-
-#define HS_RGB_INDICATOR_COUNT              99
-#define HS_RGB_BAT_COUNT                    1
-
+/* Wireless Info */
 #define MD_BT1_NAME                         "M1 V5"
 #define MD_BT2_NAME                         "M1 V5"
 #define MD_BT3_NAME                         "M1 V5"
 #define MD_DONGLE_PRODUCT                   "M1 V5"
-
-/* System */
-#define SYSTEM_WIN_PIN                      C15
-#define SYSTEM_MAC_PIN                      C14
 
 /* UART */
 #define UART_DRIVER                         SD3
@@ -31,7 +26,7 @@
 
 /* Encoder */
 #define ENCODER_MAP_KEY_DELAY               1
-#define ENCODER_A_PIN                       ((pin_t[])ENCODER_A_PINS)[0]
+#define ENCODER_B_PIN                       B6
 
 /* SPI */
 #define SPI_DRIVER                          SPIDQ
@@ -43,17 +38,6 @@
 #define EXTERNAL_FLASH_SPI_SLAVE_SELECT_PIN C12
 #define WEAR_LEVELING_LOGICAL_SIZE          (WEAR_LEVELING_BACKING_SIZE / 2)
 
-/* RGB Matrix */
-#define RGB_MATRIX_FRAMEBUFFER_EFFECTS
-#define RGB_MATRIX_KEYPRESSES
-
 /* WS2812 */
-#define WS2812_SPI_DRIVER  SPIDM2
-#define WS2812_SPI_DIVISOR 32
-
-/* rgb_record */
-#define ENABLE_RGB_MATRIX_RGBR_PLAY
-#define RGBREC_CHANNEL_NUM         4
-#define EECONFIG_CONFINFO_USE_SIZE (4 + 16)
-#define EECONFIG_RGBREC_USE_SIZE   (RGBREC_CHANNEL_NUM * MATRIX_ROWS * MATRIX_COLS * 2)
-#define EECONFIG_USER_DATA_SIZE    (EECONFIG_RGBREC_USE_SIZE + EECONFIG_CONFINFO_USE_SIZE)
+#define WS2812_SPI_DRIVER                   SPIDM2
+#define WS2812_SPI_DIVISOR                  32

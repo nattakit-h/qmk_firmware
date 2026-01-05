@@ -79,36 +79,38 @@ void lpwr_exti_init_hook(void) {
         // ROW2COL
         for (uint8_t i = 0; i < ARRAY_SIZE(col_pins); i++) {
             if (col_pins[i] != NO_PIN) {
-                setPinOutput(col_pins[i]);
-                writePinHigh(col_pins[i]);
+                gpio_set_pin_output_push_pull(col_pins[i]);
+                gpio_write_pin_high(col_pins[i]);
             }
         }
     }
-    setPinInput(HS_BAT_CABLE_PIN);
+    gpio_set_pin_input(MG_USB_INSERT_PIN);
     waitInputPinDelay();
-    palEnableLineEvent(HS_BAT_CABLE_PIN, PAL_EVENT_MODE_RISING_EDGE);
+    palEnableLineEvent(MG_USB_INSERT_PIN, PAL_EVENT_MODE_RISING_EDGE);
 
-    setPinInput(ENCODER_A_PIN);
+    setPinInput(ENCODER_B_PIN);
     waitInputPinDelay();
-    palEnableLineEvent(ENCODER_A_PIN, PAL_EVENT_MODE_RISING_EDGE);
+    palEnableLineEvent(ENCODER_B_PIN, PAL_EVENT_MODE_RISING_EDGE);
 }
 
 void palcallback_cb(uint8_t line) {
     switch (line) {
-        case PAL_PAD(HS_BAT_CABLE_PIN): {
+        case PAL_PAD(MG_USB_INSERT_PIN): {
             lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_CABLE);
         } break;
+        case PAL_PAD(ENCODER_B_PIN): {
+            lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_ENCODER);
+        } break;
         default: {
-
         } break;
     }
 }
 
 void lpwr_stop_hook_pre(void) {
 
-    gpio_write_pin_low(LED_POWER_EN_PIN);
-    gpio_write_pin_low(A9);
-    gpio_write_pin_low(HS_LED_BOOSTING_PIN);
+    gpio_write_pin_low(MG_LED_POWER_PIN);
+    gpio_write_pin_low(MG_LED_BOOST_PIN);
+    gpio_write_pin_low(A9); // HACK: unknown pin
 
     if (lower_sleep) {
         md_send_devctrl(MD_SND_CMD_DEVCTRL_USB);
@@ -121,7 +123,8 @@ void lpwr_stop_hook_post(void) {
     if (lower_sleep) {
         switch (lpwr_get_sleep_wakeupcd()) {
             case LPWR_WAKEUP_USB:
-            case LPWR_WAKEUP_CABLE: {
+            case LPWR_WAKEUP_CABLE:
+            case LPWR_WAKEUP_ENCODER: {
                 lower_sleep = false;
                 lpwr_set_state(LPWR_WAKEUP);
             } break;

@@ -57,8 +57,6 @@ void eeconfig_confinfo_default(void) {
     confinfo.last_btdevs      = 1;
     confinfo.dir_flag         = 0;
     confinfo.ctrl_app_flag    = 0;
-
-    eeconfig_init_user_datablock();
     eeconfig_confinfo_update(confinfo.raw);
 }
 
@@ -78,29 +76,19 @@ void keyboard_post_init_kb(void) {
 
     eeconfig_confinfo_init();
 
-#ifdef LED_POWER_EN_PIN
-    gpio_set_pin_output(LED_POWER_EN_PIN);
-    gpio_write_pin_high(LED_POWER_EN_PIN);
+    gpio_set_pin_output(MG_LED_POWER_PIN);
+    gpio_write_pin_high(MG_LED_POWER_PIN);
+    gpio_set_pin_output(MG_LED_BOOST_PIN);
+    gpio_write_pin_high(MG_LED_BOOST_PIN);
 
-    gpio_set_pin_output(HS_LED_BOOSTING_PIN);
-    gpio_write_pin_high(HS_LED_BOOSTING_PIN);
-#endif
+    gpio_write_pin_low(MG_USB_POWER_PIN);
+    gpio_set_pin_output(MG_USB_POWER_PIN);
 
-#ifdef USB_POWER_EN_PIN
-    gpio_write_pin_low(USB_POWER_EN_PIN);
-    gpio_set_pin_output(USB_POWER_EN_PIN);
-#endif
+    gpio_set_pin_input(MG_USB_INSERT_PIN);
+    gpio_set_pin_input_high(MG_BAT_FULL_PIN);
 
-#ifdef HS_BAT_CABLE_PIN
-    setPinInput(HS_BAT_CABLE_PIN);
-#endif
-
-#ifdef BAT_FULL_PIN
-    setPinInputHigh(BAT_FULL_PIN);
-#endif
-
-    setPinInputHigh(SYSTEM_WIN_PIN);
-    setPinInputHigh(SYSTEM_MAC_PIN);
+    gpio_set_pin_input_high(MG_USE_BAT_PIN);
+    gpio_set_pin_input_high(MG_USE_MAC_PIN);
 
     wireless_init();
     wireless_devs_change(!confinfo.devs, confinfo.devs, false);
@@ -110,33 +98,20 @@ void keyboard_post_init_kb(void) {
 }
 
 void usb_power_connect(void) {
-
-#    ifdef USB_POWER_EN_PIN
-    gpio_write_pin_low(USB_POWER_EN_PIN);
-#    endif
+    gpio_write_pin_low(MG_USB_POWER_PIN);
 }
 
 void usb_power_disconnect(void) {
-
-#    ifdef USB_POWER_EN_PIN
-    gpio_write_pin_high(USB_POWER_EN_PIN);
-#    endif
+    gpio_write_pin_high(MG_USB_POWER_PIN);
 }
 
 void suspend_power_down_kb(void) {
-
-#    ifdef LED_POWER_EN_PIN
-    gpio_write_pin_low(LED_POWER_EN_PIN);
-#    endif
-
+    gpio_write_pin_low(MG_LED_POWER_PIN);
     suspend_power_down_user();
 }
 
 void suspend_wakeup_init_kb(void) {
-
-#    ifdef LED_POWER_EN_PIN
-    gpio_write_pin_high(LED_POWER_EN_PIN);
-#    endif
+    gpio_write_pin_high(MG_LED_POWER_PIN);
 
     wireless_devs_change(wireless_get_current_devs(), wireless_get_current_devs(), false);
     suspend_wakeup_init_user();
@@ -306,7 +281,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         } break;
         case MG_TEST: {
             if (record->event.pressed) {
-                lpwr_set_state(LPWR_STOP);
+                // do noting
             }
             return false;
         } break;
@@ -462,9 +437,9 @@ void housekeeping_task_user(void) { // loop
 
     static uint32_t hs_current_time;
 
-    charging_state = readPin(HS_BAT_CABLE_PIN);
+    charging_state = gpio_read_pin(MG_USB_INSERT_PIN);
 
-    bat_full_flag = readPin(BAT_FULL_PIN);
+    bat_full_flag = gpio_read_pin(MG_BAT_FULL_PIN);
 
     if (charging_state && (bat_full_flag)) {
         hs_now_mode = MD_SND_CMD_DEVCTRL_CHARGING_DONE;
@@ -482,10 +457,10 @@ void housekeeping_task_user(void) { // loop
     }
 
     if (charging_state) {
-        writePin(HS_LED_BOOSTING_PIN, 0);
+        gpio_write_pin_low(MG_LED_BOOST_PIN);
 
     } else {
-        writePin(HS_LED_BOOSTING_PIN, 1);
+        gpio_write_pin_high(MG_LED_BOOST_PIN);
     }
 
     if (timer_elapsed32(hs_ct_time) > 3000 && hs_ct_time) {
@@ -494,7 +469,7 @@ void housekeeping_task_user(void) { // loop
         hs_ct_time = 0;
     }
 
-    if ((readPin(SYSTEM_WIN_PIN) != 0) && (readPin(SYSTEM_MAC_PIN) == 0)) { // mac system
+    if ((gpio_read_pin(MG_USE_BAT_PIN) != 0) && (gpio_read_pin(MG_USE_MAC_PIN) == 0)) { // mac system
         if (!keymap_is_mac_system()) {
             set_single_persistent_default_layer(_MBL);
             layer_move(0);
@@ -543,6 +518,6 @@ void hs_reset_settings(void) {
 void lpwr_wakeup_hook(void) {
     hs_mode_scan(false, confinfo.devs, confinfo.last_btdevs);
 
-    gpio_write_pin_high(LED_POWER_EN_PIN);
-    gpio_write_pin_high(HS_LED_BOOSTING_PIN);
+    gpio_write_pin_high(MG_LED_POWER_PIN);
+    gpio_write_pin_low(MG_LED_BOOST_PIN);
 }
