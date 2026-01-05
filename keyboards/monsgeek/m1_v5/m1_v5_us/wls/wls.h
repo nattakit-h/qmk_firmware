@@ -16,7 +16,6 @@ enum modeio_mode {
     hs_wireless
 };
 
-extern bool lower_sleep;
 bool hs_rgb_blink_hook(void);
 bool hs_mode_scan(bool update, uint8_t mode);
 bool hs_modeio_detection(bool update, uint8_t *mode);

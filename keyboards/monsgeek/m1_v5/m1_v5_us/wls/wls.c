@@ -1,6 +1,5 @@
 #include "wls.h"
 
-static ioline_t col_pins[MATRIX_COLS] = MATRIX_COL_PINS;
 
 bool hs_modeio_detection(bool update, uint8_t *mode) {
     static uint32_t scan_timer = 0x00;
@@ -74,63 +73,4 @@ bool hs_rgb_blink_hook() {
     return true;
 }
 
-void lpwr_exti_init_hook(void) {
-    if (lower_sleep) {
-        // ROW2COL
-        for (uint8_t i = 0; i < ARRAY_SIZE(col_pins); i++) {
-            if (col_pins[i] != NO_PIN) {
-                gpio_set_pin_output_push_pull(col_pins[i]);
-                gpio_write_pin_high(col_pins[i]);
-            }
-        }
-    }
-    gpio_set_pin_input(MG_USB_INSERT_PIN);
-    waitInputPinDelay();
-    palEnableLineEvent(MG_USB_INSERT_PIN, PAL_EVENT_MODE_RISING_EDGE);
 
-    setPinInput(ENCODER_B_PIN);
-    waitInputPinDelay();
-    palEnableLineEvent(ENCODER_B_PIN, PAL_EVENT_MODE_RISING_EDGE);
-}
-
-void palcallback_cb(uint8_t line) {
-    switch (line) {
-        case PAL_PAD(MG_USB_INSERT_PIN): {
-            lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_CABLE);
-        } break;
-        case PAL_PAD(ENCODER_B_PIN): {
-            lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_ENCODER);
-        } break;
-        default: {
-        } break;
-    }
-}
-
-void lpwr_stop_hook_pre(void) {
-
-    gpio_write_pin_low(MG_LED_POWER_PIN);
-    gpio_write_pin_low(MG_LED_BOOST_PIN);
-    gpio_write_pin_low(A9); // HACK: unknown pin
-
-    if (lower_sleep) {
-        md_send_devctrl(MD_SND_CMD_DEVCTRL_USB);
-        wait_ms(200);
-        lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_UART);
-    }
-}
-
-void lpwr_stop_hook_post(void) {
-    if (lower_sleep) {
-        switch (lpwr_get_sleep_wakeupcd()) {
-            case LPWR_WAKEUP_USB:
-            case LPWR_WAKEUP_CABLE:
-            case LPWR_WAKEUP_ENCODER: {
-                lower_sleep = false;
-                lpwr_set_state(LPWR_WAKEUP);
-            } break;
-            default: {
-                lpwr_set_state(LPWR_STOP);
-            } break;
-        }
-    }
-}

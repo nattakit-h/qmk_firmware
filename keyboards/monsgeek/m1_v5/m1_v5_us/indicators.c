@@ -131,12 +131,12 @@ void mg_indicators_state(void) {
 
     rgb_matrix_set_color_all(0, 0, 0);
 
-    extern uint8_t hs_now_mode;
-    for (uint8_t i = 0; i < sizeof(mg_indicators_battery_indices); i++) {
+    extern mg_data_t mg_data;
+    for (uint8_t i = 0; i < ARRAY_SIZE(mg_indicators_battery_indices); i++) {
         if ((i < (*md_getp_bat() / 10)) || (i == 0)) {
-                if (hs_now_mode == MD_SND_CMD_DEVCTRL_CHARGING) {
+                if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING) {
                     set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_CHARGING);
-                } else if (hs_now_mode == MD_SND_CMD_DEVCTRL_CHARGING_DONE) {
+                } else if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING_DONE) {
                     set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_CHARGING_DONE);
                 } else if (*md_getp_bat() >= (MG_INDICATORS_BAT_CRITICAL)) {
                     set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_NORMAL);
