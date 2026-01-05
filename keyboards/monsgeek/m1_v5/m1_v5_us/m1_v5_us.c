@@ -15,15 +15,11 @@ typedef union {
     struct {
         uint8_t devs : 3;
         uint8_t last_btdevs : 3;
-        uint8_t ctrl_app_flag : 1;
     };
 } confinfo_t;
 confinfo_t confinfo;
 
 void hs_reset_settings(void);
-
-#define keymap_is_mac_system() ((get_highest_layer(default_layer_state) == _MBL) || (get_highest_layer(default_layer_state) == _MFL))
-#define keymap_is_base_layer() ((get_highest_layer(default_layer_state) == _BL) || (get_highest_layer(default_layer_state) == _FL))
 
 uint32_t post_init_timer     = 0x00;
 bool im_test_rate_flag       = false;
@@ -45,7 +41,6 @@ uint32_t eeconfig_confinfo_read(void) {
 
 void eeconfig_confinfo_default(void) {
     confinfo.last_btdevs      = 1;
-    confinfo.ctrl_app_flag    = 0;
     eeconfig_confinfo_update(confinfo.raw);
 }
 
@@ -249,7 +244,6 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
     return false;
 }
 
-uint32_t hs_ct_time;
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
     if (process_record_user(keycode, record) != true) {
@@ -287,26 +281,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             extern bool mg_indicators_battery_show;
             mg_indicators_battery_show = record->event.pressed;
             return false;
-        } break;
-        case MG_CT_A: {
-            if (record->event.pressed) {
-                hs_ct_time = timer_read32();
-            } else {
-                hs_ct_time = 0;
-            }
-            return false;
-        } break;
-        case KC_RCTL: {
-            if (confinfo.ctrl_app_flag) {
-                if (record->event.pressed) {
-                    register_code16(KC_APP);
-                } else {
-                    unregister_code16(KC_APP);
-                }
-                return false;
-            } else {
-                return true;
-            }
         } break;
         default:
             break;
@@ -347,24 +321,6 @@ void housekeeping_task_user(void) { // loop
 
     } else {
         gpio_write_pin_high(MG_LED_BOOST_PIN);
-    }
-
-    if (timer_elapsed32(hs_ct_time) > 3000 && hs_ct_time) {
-        confinfo.ctrl_app_flag = !confinfo.ctrl_app_flag;
-        eeconfig_confinfo_update(confinfo.raw);
-        hs_ct_time = 0;
-    }
-
-    if ((gpio_read_pin(MG_USE_BAT_PIN) != 0) && (gpio_read_pin(MG_USE_MAC_PIN) == 0)) { // mac system
-        if (!keymap_is_mac_system()) {
-            set_single_persistent_default_layer(_MBL);
-            layer_move(0);
-        }
-    } else { // win system
-        if (keymap_is_mac_system()) {
-            set_single_persistent_default_layer(_BL);
-            layer_move(0);
-        }
     }
 }
 
