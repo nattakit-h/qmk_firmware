@@ -36,51 +36,14 @@
         }
     },
     "keycodes": [
-        {
-            "key": "KC_BT1"
-        },
-        {
-            "key": "KC_BT2"
-        },
-        {
-            "key": "KC_BT3"
-        },
-        {
-            "key": "KC_2G4"
-        },
-        {
-            "key": "KC_USB"
-        },
-        {
-            "key": "RP_P0"
-        },
-        {
-            "key": "RP_P1"
-        },
-        {
-            "key": "RP_P2"
-        },
-        {
-            "key": "RP_END"
-        },
-        {
-            "key": "RL_MOD"
-        },
-        {
-            "key": "HS_BATQ"
-        },
-        {
-            "key": "HS_DIR"
-        },
-        {
-            "key": "BT_TEST"
-        },
-        {
-            "key": "HS_SIRI"
-        },
-        {
-            "key": "HS_CT_A"
-        }
+        {"key": "KC_BT1"},
+        {"key": "KC_BT2"},
+        {"key": "KC_BT3"},
+        {"key": "KC_2G4"},
+        {"key": "KC_USB"},
+        {"key": "MG_BAT"},
+        {"key": "MG_TEST"},
+        {"key": "MG_CT_A"}
     ],
     "dynamic_keymap": {
         "layer_count": 7
@@ -92,50 +55,7 @@
     "processor": "WB32FQ95",
     "rgb_matrix": {
         "animations": {
-            "alphas_mods": true,
-            "band_pinwheel_sat": true,
-            "band_pinwheel_val": true,
-            "band_sat": true,
-            "band_spiral_sat": true,
-            "band_spiral_val": true,
-            "band_val": true,
-            "breathing": true,
-            "cycle_all": true,
-            "cycle_left_right": true,
-            "cycle_out_in": true,
-            "cycle_out_in_dual": true,
-            "cycle_pinwheel": true,
-            "cycle_spiral": true,
-            "cycle_up_down": true,
-            "digital_rain": true,
-            "dual_beacon": true,
-            "gradient_left_right": true,
-            "gradient_up_down": true,
-            "hue_breathing": true,
-            "hue_pendulum": true,
-            "hue_wave": true,
-            "jellybean_raindrops": true,
-            "multisplash": true,
-            "pixel_flow": true,
-            "pixel_fractal": true,
-            "pixel_rain": true,
-            "rainbow_beacon": true,
-            "rainbow_moving_chevron": true,
-            "rainbow_pinwheels": true,
-            "raindrops": true,
-            "solid_color": true,
-            "solid_multisplash": true,
-            "solid_reactive": true,
-            "solid_reactive_cross": true,
-            "solid_reactive_multicross": true,
-            "solid_reactive_multinexus": true,
-            "solid_reactive_multiwide": true,
-            "solid_reactive_nexus": true,
-            "solid_reactive_simple": true,
-            "solid_reactive_wide": true,
-            "solid_splash": true,
-            "splash": true,
-            "typing_heatmap": true
+            "solid_color": true
         },
         "driver": "ws2812",
         "layout": [
@@ -223,12 +143,10 @@
             {"matrix": [5,  6], "x": 96,  "y": 64, "flags": 4}
         ],
         "max_brightness": 104,
-        "val_steps": 26,
-        "speed_steps": 51,
+        "val_steps": 13,
         "default": {
             "animation": "solid_color",
-            "val": 1,
-            "speed": 255
+            "val": 0
         },
         "sleep": true
     },
