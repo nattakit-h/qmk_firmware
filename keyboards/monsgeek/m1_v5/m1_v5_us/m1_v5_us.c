@@ -14,7 +14,6 @@ typedef union {
     uint32_t raw;
     struct {
         uint8_t devs : 3;
-        uint8_t last_btdevs : 3;
     };
 } confinfo_t;
 confinfo_t confinfo;
@@ -40,7 +39,6 @@ uint32_t eeconfig_confinfo_read(void) {
 }
 
 void eeconfig_confinfo_default(void) {
-    confinfo.last_btdevs      = 1;
     eeconfig_confinfo_update(confinfo.raw);
 }
 
@@ -123,7 +121,7 @@ void wireless_post_task(void) {
         post_init_timer = 0x00;
     }
 
-    hs_mode_scan(false, confinfo.devs, confinfo.last_btdevs);
+    hs_mode_scan(false, confinfo.devs);
 
 }
 
@@ -133,7 +131,7 @@ uint32_t wls_process_long_press(uint32_t trigger_time, void *cb_arg) {
     switch (keycode) {
         case KC_BT1: {
             uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
+            hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
                 wireless_devs_change(wireless_get_current_devs(), DEVS_BT1, true);
             }
@@ -141,21 +139,21 @@ uint32_t wls_process_long_press(uint32_t trigger_time, void *cb_arg) {
         } break;
         case KC_BT2: {
             uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
+            hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
                 wireless_devs_change(wireless_get_current_devs(), DEVS_BT2, true);
             }
         } break;
         case KC_BT3: {
             uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
+            hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
                 wireless_devs_change(wireless_get_current_devs(), DEVS_BT3, true);
             }
         } break;
         case KC_2G4: {
             uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
+            hs_modeio_detection(true, &mode);
             if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
                 wireless_devs_change(wireless_get_current_devs(), DEVS_2G4, true);
             }
@@ -197,7 +195,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case KC_BT1: {
             uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
+            hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
                 WLS_KEYCODE_EXEC(DEVS_BT1);
                 hs_rgb_blink_set_timer(timer_read32());
@@ -206,7 +204,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
         } break;
         case KC_BT2: {
             uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
+            hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
                 WLS_KEYCODE_EXEC(DEVS_BT2);
                 hs_rgb_blink_set_timer(timer_read32());
@@ -214,7 +212,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
         } break;
         case KC_BT3: {
             uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
+            hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
                 WLS_KEYCODE_EXEC(DEVS_BT3);
                 hs_rgb_blink_set_timer(timer_read32());
@@ -222,7 +220,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
         } break;
         case KC_2G4: {
             uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
+            hs_modeio_detection(true, &mode);
             if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
                 WLS_KEYCODE_EXEC(DEVS_2G4);
                 hs_rgb_blink_set_timer(timer_read32());
@@ -231,7 +229,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
 
         case KC_USB: {
             uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
+            hs_modeio_detection(true, &mode);
             if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
                 WLS_KEYCODE_EXEC(DEVS_USB);
                 hs_rgb_blink_set_timer(timer_read32());
@@ -327,7 +325,6 @@ void housekeeping_task_user(void) { // loop
 void wireless_devs_change_kb(uint8_t old_devs, uint8_t new_devs, bool reset) {
     if (confinfo.devs != wireless_get_current_devs()) {
         confinfo.devs = wireless_get_current_devs();
-        if (confinfo.devs > 0 && confinfo.devs < 4) confinfo.last_btdevs = confinfo.devs;
         eeconfig_confinfo_update(confinfo.raw);
     }
 
@@ -358,7 +355,7 @@ void hs_reset_settings(void) {
 }
 
 void lpwr_wakeup_hook(void) {
-    hs_mode_scan(false, confinfo.devs, confinfo.last_btdevs);
+    hs_mode_scan(false, confinfo.devs);
 
     gpio_write_pin_high(MG_LED_POWER_PIN);
     gpio_write_pin_low(MG_LED_BOOST_PIN);

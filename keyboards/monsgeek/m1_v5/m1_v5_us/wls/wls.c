@@ -2,7 +2,7 @@
 
 static ioline_t col_pins[MATRIX_COLS] = MATRIX_COL_PINS;
 
-bool hs_modeio_detection(bool update, uint8_t *mode, uint8_t lsat_btdev) {
+bool hs_modeio_detection(bool update, uint8_t *mode) {
     static uint32_t scan_timer = 0x00;
 
     if ((update != true) && (timer_elapsed32(scan_timer) <= (HS_MODEIO_DETECTION_TIME))) {
@@ -15,9 +15,9 @@ bool hs_modeio_detection(bool update, uint8_t *mode, uint8_t lsat_btdev) {
 
 static uint32_t hs_linker_rgb_timer = 0x00;
 
-bool hs_mode_scan(bool update, uint8_t moude, uint8_t lsat_btdev) {
+bool hs_mode_scan(bool update, uint8_t mode) {
 
-    if (hs_modeio_detection(update, &moude, lsat_btdev)) {
+    if (hs_modeio_detection(update, &mode)) {
 
         return true;
     }
