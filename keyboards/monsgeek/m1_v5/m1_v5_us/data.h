@@ -19,16 +19,6 @@ typedef struct {
     bool     show_info;
 } mg_data_t;
 
-enum mg_layers {
-    _BL = 0,
-    _FL,
-    _MBL,
-    _MFL,
-    _XL,
-    _YL,
-    _DL,
-};
-
 enum MG_RGB_MATRIX_INDICES {
     KX_RALT,
     KX_FUNC,

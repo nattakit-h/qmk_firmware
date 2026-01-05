@@ -36,17 +36,16 @@
         }
     },
     "keycodes": [
-        {"key": "KC_BT1"},
-        {"key": "KC_BT2"},
-        {"key": "KC_BT3"},
-        {"key": "KC_2G4"},
-        {"key": "KC_USB"},
+        {"key": "MG_BT1"},
+        {"key": "MG_BT2"},
+        {"key": "MG_BT3"},
+        {"key": "MG_2G4"},
+        {"key": "MG_USB"},
         {"key": "MG_INFO"},
-        {"key": "MG_TEST"},
-        {"key": "MG_CT_A"}
+        {"key": "MG_TEST"}
     ],
     "dynamic_keymap": {
-        "layer_count": 7
+        "layer_count": 5
     },
     "matrix_pins": {
         "cols": ["C0", "C1", "C2", "C3", "A6", "B10", "B11", "B12", "B13", "B14", "A10", "C6", "C7", "C8", "C9"],

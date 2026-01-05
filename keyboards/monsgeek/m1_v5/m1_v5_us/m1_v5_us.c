@@ -95,7 +95,7 @@ uint32_t wls_process_long_press(uint32_t trigger_time, void *cb_arg) {
     uint16_t keycode = *((uint16_t *)cb_arg);
 
     switch (keycode) {
-        case KC_BT1: {
+        case MG_BT1: {
             uint8_t mode = mg_config.devs;
             hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
@@ -103,21 +103,21 @@ uint32_t wls_process_long_press(uint32_t trigger_time, void *cb_arg) {
             }
 
         } break;
-        case KC_BT2: {
+        case MG_BT2: {
             uint8_t mode = mg_config.devs;
             hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
                 wireless_devs_change(wireless_get_current_devs(), DEVS_BT2, true);
             }
         } break;
-        case KC_BT3: {
+        case MG_BT3: {
             uint8_t mode = mg_config.devs;
             hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
                 wireless_devs_change(wireless_get_current_devs(), DEVS_BT3, true);
             }
         } break;
-        case KC_2G4: {
+        case MG_2G4: {
             uint8_t mode = mg_config.devs;
             hs_modeio_detection(true, &mode);
             if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
@@ -159,7 +159,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
         } while (false)
 
     switch (keycode) {
-        case KC_BT1: {
+        case MG_BT1: {
             uint8_t mode = mg_config.devs;
             hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
@@ -168,7 +168,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
             }
 
         } break;
-        case KC_BT2: {
+        case MG_BT2: {
             uint8_t mode = mg_config.devs;
             hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
@@ -176,7 +176,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
                 hs_rgb_blink_set_timer(timer_read32());
             }
         } break;
-        case KC_BT3: {
+        case MG_BT3: {
             uint8_t mode = mg_config.devs;
             hs_modeio_detection(true, &mode);
             if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
@@ -184,7 +184,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
                 hs_rgb_blink_set_timer(timer_read32());
             }
         } break;
-        case KC_2G4: {
+        case MG_2G4: {
             uint8_t mode = mg_config.devs;
             hs_modeio_detection(true, &mode);
             if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
@@ -193,7 +193,7 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
             }
         } break;
 
-        case KC_USB: {
+        case MG_USB: {
             uint8_t mode = mg_config.devs;
             hs_modeio_detection(true, &mode);
             if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
