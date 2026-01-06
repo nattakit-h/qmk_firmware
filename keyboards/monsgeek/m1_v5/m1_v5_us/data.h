@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "quantum.h"
+
 typedef union {
     uint32_t raw;
     struct {
@@ -14,9 +16,11 @@ typedef union {
 typedef struct {
     uint32_t timestamp_init;
     uint32_t timestamp_reset;
+    uint32_t timestamp_charge;
     uint8_t  charge_state;
     bool     usb_inserted;
     bool     show_info;
+    deferred_token sleep_exec;
 } mg_data_t;
 
 enum MG_RGB_MATRIX_INDICES {

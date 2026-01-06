@@ -9,24 +9,6 @@
 #include "usb_main.h"
 #include "lowpower.h"
 
-#define HS_MODEIO_DETECTION_TIME          50
-#define HS_LBACK_TIMEOUT                  (30 * 1000)
-#define HS_SLEEP_TIMEOUT                  (1 * 60000)
-
-enum modeio_mode {
-    hs_none = 0,
-    hs_usb,
-    hs_bt,
-    hs_2g4,
-    hs_wireless
-};
-
-bool hs_rgb_blink_hook(void);
-bool hs_mode_scan(bool update, uint8_t mode);
-bool hs_modeio_detection(bool update, uint8_t *mode);
-void hs_rgb_blink_set_timer(uint32_t time);
-
-
 /*****************************************************************************/
 /*                                  Data                                     */
 /*****************************************************************************/
@@ -36,8 +18,8 @@ bool im_test_rate_flag = false;
 /* linker/wireless/lpwr_wb32.c */
 bool lower_sleep       = false;
 
-mg_config_t mg_config = {0};
-mg_data_t mg_data = {0};
+mg_config_t mg_config  = {0};
+mg_data_t   mg_data    = {0};
 
 /*****************************************************************************/
 /*                                 Config                                    */
@@ -62,6 +44,8 @@ void mg_config_init(void) {
 }
 
 /*****************************************************************************/
+/*                             Initialization                                */
+/*****************************************************************************/
 
 void mg_state_reset(void) {
     eeconfig_init();
@@ -75,7 +59,6 @@ void mg_state_reset(void) {
     eeconfig_update_keymap(&keymap_config);
 #endif
 
-    hs_rgb_blink_set_timer(timer_read32());
     keyboard_post_init_kb();
 }
 
@@ -108,121 +91,48 @@ void keyboard_post_init_kb(void) {
     keyboard_post_init_user();
 }
 
-uint32_t wls_process_long_press(uint32_t trigger_time, void *cb_arg) {
-    uint16_t keycode = *((uint16_t *)cb_arg);
 
-    switch (keycode) {
-        case MG_BT1: {
-            uint8_t mode = mg_config.devs;
-            hs_modeio_detection(true, &mode);
-            if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
-                wireless_devs_change(wireless_get_current_devs(), DEVS_BT1, true);
-            }
+/*****************************************************************************/
+/*                             Keys Processing                               */
+/*****************************************************************************/
 
-        } break;
-        case MG_BT2: {
-            uint8_t mode = mg_config.devs;
-            hs_modeio_detection(true, &mode);
-            if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
-                wireless_devs_change(wireless_get_current_devs(), DEVS_BT2, true);
-            }
-        } break;
-        case MG_BT3: {
-            uint8_t mode = mg_config.devs;
-            hs_modeio_detection(true, &mode);
-            if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
-                wireless_devs_change(wireless_get_current_devs(), DEVS_BT3, true);
-            }
-        } break;
-        case MG_2G4: {
-            uint8_t mode = mg_config.devs;
-            hs_modeio_detection(true, &mode);
-            if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
-                wireless_devs_change(wireless_get_current_devs(), DEVS_2G4, true);
-            }
-        } break;
-        case EE_CLR: {
-
-        } break;
-        default:
-            break;
-    }
-
+uint32_t mg_process_record_connect_reset_callback(uint32_t trigger_time, void *cb_arg) {
+    wireless_devs_change(wireless_get_current_devs(), (uint32_t)cb_arg, true);
     return 0;
 }
 
-bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
-    // static uint16_t keycode_shadow                     = 0x00;
-    static deferred_token wls_process_long_press_token = INVALID_DEFERRED_TOKEN;
+bool mg_process_record_connect(uint16_t keycode, keyrecord_t *record) {
+    const uint32_t hold_time = 3000;
+    static deferred_token reset_exec = INVALID_DEFERRED_TOKEN;
 
-    // keycode_shadow = keycode;
-
-#    ifndef WLS_KEYCODE_PAIR_TIME
-#        define WLS_KEYCODE_PAIR_TIME 3000
-#    endif
-
-#    define WLS_KEYCODE_EXEC(wls_dev)                                                                                          \
-        do {                                                                                                                   \
-            if (record->event.pressed) {                                                                                       \
-                if (wireless_get_current_devs() != wls_dev)                                                                    \
-                    wireless_devs_change(wireless_get_current_devs(), wls_dev, false);                                         \
-                if (wls_process_long_press_token == INVALID_DEFERRED_TOKEN) {                                                  \
-                    wls_process_long_press_token = defer_exec(WLS_KEYCODE_PAIR_TIME, wls_process_long_press, &keycode); \
-                }                                                                                                              \
-            } else {                                                                                                           \
-                cancel_deferred_exec(wls_process_long_press_token);                                                            \
-                wls_process_long_press_token = INVALID_DEFERRED_TOKEN;                                                         \
-            }                                                                                                                  \
-        } while (false)
-
+    uint32_t dev = 0;
     switch (keycode) {
-        case MG_BT1: {
-            uint8_t mode = mg_config.devs;
-            hs_modeio_detection(true, &mode);
-            if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
-                WLS_KEYCODE_EXEC(DEVS_BT1);
-                hs_rgb_blink_set_timer(timer_read32());
-            }
+        case MG_USB: dev = DEVS_USB; break;
+        case MG_2G4: dev = DEVS_2G4; break;
+        case MG_BT1: dev = DEVS_BT1; break;
+        case MG_BT2: dev = DEVS_BT2; break;
+        case MG_BT3: dev = DEVS_BT3; break;
+        default: return true;
+    }
 
-        } break;
-        case MG_BT2: {
-            uint8_t mode = mg_config.devs;
-            hs_modeio_detection(true, &mode);
-            if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
-                WLS_KEYCODE_EXEC(DEVS_BT2);
-                hs_rgb_blink_set_timer(timer_read32());
-            }
-        } break;
-        case MG_BT3: {
-            uint8_t mode = mg_config.devs;
-            hs_modeio_detection(true, &mode);
-            if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
-                WLS_KEYCODE_EXEC(DEVS_BT3);
-                hs_rgb_blink_set_timer(timer_read32());
-            }
-        } break;
-        case MG_2G4: {
-            uint8_t mode = mg_config.devs;
-            hs_modeio_detection(true, &mode);
-            if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
-                WLS_KEYCODE_EXEC(DEVS_2G4);
-                hs_rgb_blink_set_timer(timer_read32());
-            }
-        } break;
-
-        case MG_USB: {
-            uint8_t mode = mg_config.devs;
-            hs_modeio_detection(true, &mode);
-            if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
-                WLS_KEYCODE_EXEC(DEVS_USB);
-                hs_rgb_blink_set_timer(timer_read32());
-            }
-        } break;
-        default:
-            return true;
+    if (record->event.pressed) {
+        if (wireless_get_current_devs() != dev) {
+            wireless_devs_change(wireless_get_current_devs(), dev, false);
+        }
+        if (reset_exec == INVALID_DEFERRED_TOKEN) {
+            reset_exec = defer_exec(hold_time, mg_process_record_connect_reset_callback, (void*)dev);
+        }
+    } else {
+        cancel_deferred_exec(reset_exec);
+        reset_exec = INVALID_DEFERRED_TOKEN;
     }
 
     return false;
+}
+
+uint32_t mg_process_record_sleep_callback(uint32_t trigger_time, void *cb_arg) {
+    lpwr_set_state(LPWR_STOP);
+    return 0;
 }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
@@ -231,7 +141,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         return false;
     }
 
-    if (process_record_wls(keycode, record) != true) {
+    if (mg_process_record_connect(keycode, record) != true) {
         return false;
     }
 
@@ -243,8 +153,8 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             }
         } break;
         case MG_TEST: {
-            if (record->event.pressed) {
-                // do noting
+            if (record->event.pressed && mg_data.sleep_exec == INVALID_DEFERRED_TOKEN) {
+                mg_data.sleep_exec = defer_exec(500, mg_process_record_sleep_callback, NULL);
             }
             return false;
         } break;
@@ -268,13 +178,11 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
-void housekeeping_task_user(void) { // loop
+void housekeeping_task_user(void) {
     if (mg_data.timestamp_reset && timer_elapsed32(mg_data.timestamp_reset) > 3000) {
         mg_state_reset();
         mg_data.timestamp_reset = 0;
     }
-
-    static uint32_t hs_current_time;
 
     mg_data.usb_inserted = gpio_read_pin(MG_USB_INSERT_PIN);
     bool bat_fulled = gpio_read_pin(MG_BAT_FULL_PIN);
@@ -287,9 +195,9 @@ void housekeeping_task_user(void) { // loop
         mg_data.charge_state = MD_SND_CMD_DEVCTRL_CHARGING_STOP;
     }
 
-    if (!hs_current_time || timer_elapsed32(hs_current_time) > 1000) {
+    if (mg_data.timestamp_charge == 0 || timer_elapsed32(mg_data.timestamp_charge) > 1000) {
 
-        hs_current_time = timer_read32();
+        mg_data.timestamp_charge = timer_read32();
         md_send_devctrl(mg_data.charge_state);
         md_send_devctrl(MD_SND_CMD_DEVCTRL_INQVOL);
     }
@@ -329,7 +237,6 @@ void suspend_wakeup_init_kb(void) {
 
     wireless_devs_change(wireless_get_current_devs(), wireless_get_current_devs(), false);
     suspend_wakeup_init_user();
-    hs_rgb_blink_set_timer(timer_read32());
 }
 
 /*****************************************************************************/
@@ -354,22 +261,16 @@ void wireless_devs_change_kb(uint8_t old_devs, uint8_t new_devs, bool reset) {
 }
 
 void wireless_post_task(void) {
-    // auto switching devs
     if (mg_data.timestamp_init && timer_elapsed32(mg_data.timestamp_init) >= 100) {
-
-        md_send_devctrl(MD_SND_CMD_DEVCTRL_FW_VERSION);   // get the module fw version.
-        md_send_devctrl(MD_SND_CMD_DEVCTRL_SLEEP_BT_EN);  // timeout 30min to sleep in bt mode, enable
-        md_send_devctrl(MD_SND_CMD_DEVCTRL_SLEEP_2G4_EN); // timeout 30min to sleep in 2.4g mode, enable
+        md_send_devctrl(MD_SND_CMD_DEVCTRL_FW_VERSION);
+        md_send_devctrl(MD_SND_CMD_DEVCTRL_SLEEP_BT_EN);
+        md_send_devctrl(MD_SND_CMD_DEVCTRL_SLEEP_2G4_EN);
         wireless_devs_change(!mg_config.devs, mg_config.devs, false);
         mg_data.timestamp_init = 0;
     }
-
-    hs_mode_scan(false, mg_config.devs);
-
 }
 
 bool lpwr_is_allow_timeout_hook(void) {
-
     if (wireless_get_current_devs() == DEVS_USB) {
         return false;
     }
@@ -407,10 +308,9 @@ void lpwr_stop_hook_pre(void) {
 }
 
 void lpwr_wakeup_hook(void) {
-    hs_mode_scan(false, mg_config.devs);
-
     gpio_write_pin_high(MG_LED_POWER_PIN);
     gpio_write_pin_low(MG_LED_BOOST_PIN);
+    mg_data.sleep_exec = INVALID_DEFERRED_TOKEN;
 }
 
 void palcallback_cb(uint8_t line) {
@@ -425,79 +325,3 @@ void palcallback_cb(uint8_t line) {
         } break;
     }
 }
-
-/*****************************************************************************/
-
-bool hs_modeio_detection(bool update, uint8_t *mode) {
-    static uint32_t scan_timer = 0x00;
-
-    if ((update != true) && (timer_elapsed32(scan_timer) <= (HS_MODEIO_DETECTION_TIME))) {
-        return false;
-    }
-    scan_timer = timer_read32();
-    *mode = hs_none;
-    return false;
-}
-
-static uint32_t hs_linker_rgb_timer = 0x00;
-
-bool hs_mode_scan(bool update, uint8_t mode) {
-
-    if (hs_modeio_detection(update, &mode)) {
-
-        return true;
-    }
-    hs_rgb_blink_hook();
-    return false;
-}
-
-void hs_rgb_blink_set_timer(uint32_t time) {
-    hs_linker_rgb_timer = time;
-}
-
-uint32_t hs_rgb_blink_get_timer(void) {
-    return hs_linker_rgb_timer;
-}
-
-bool hs_rgb_blink_hook() {
-    static uint8_t last_status;
-
-    if (last_status != *md_getp_state()) {
-        last_status = *md_getp_state();
-        hs_rgb_blink_set_timer(0x00);
-    }
-
-    switch (*md_getp_state()) {
-        case MD_STATE_NONE: {
-            hs_rgb_blink_set_timer(0x00);
-        } break;
-
-        case MD_STATE_DISCONNECTED:
-            if (hs_rgb_blink_get_timer() == 0x00) {
-                hs_rgb_blink_set_timer(timer_read32());
-                extern void wireless_devs_change_kb(uint8_t old_devs, uint8_t new_devs, bool reset);
-                wireless_devs_change_kb(wireless_get_current_devs(), wireless_get_current_devs(), false);
-            } else {
-                if (timer_elapsed32(hs_rgb_blink_get_timer()) >= HS_LBACK_TIMEOUT) {
-                    hs_rgb_blink_set_timer(timer_read32());
-                    md_send_devctrl(MD_SND_CMD_DEVCTRL_USB);
-                    wait_ms(200);
-                    lpwr_set_timeout_manual(true);
-                }
-            }
-        case MD_STATE_CONNECTED:
-            if (hs_rgb_blink_get_timer() == 0x00) {
-                hs_rgb_blink_set_timer(timer_read32());
-            } else {
-                if (timer_elapsed32(hs_rgb_blink_get_timer()) >= HS_SLEEP_TIMEOUT) {
-                    hs_rgb_blink_set_timer(timer_read32());
-                    lpwr_set_timeout_manual(true);
-                }
-            }
-        default:
-            break;
-    }
-    return true;
-}
-
-

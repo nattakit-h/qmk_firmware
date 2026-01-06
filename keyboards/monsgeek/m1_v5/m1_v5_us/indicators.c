@@ -34,7 +34,7 @@ void mg_indicators_guilock(void) {
 /*****************************************************************************/
 /*                         Connectivity Indicator                            */
 /*****************************************************************************/
-
+// TODO: migrate these to mg_data
 static uint32_t mg_indicators_conn_timer    = 0;
 static uint8_t  mg_indicators_conn_index    = 0;
 static rgb_t    mg_indicators_conn_rgb      = {RGB_WHITE};
