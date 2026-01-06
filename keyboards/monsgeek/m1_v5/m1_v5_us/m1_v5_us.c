@@ -309,7 +309,7 @@ void lpwr_stop_hook_pre(void) {
 
 void lpwr_wakeup_hook(void) {
     gpio_write_pin_high(MG_LED_POWER_PIN);
-    gpio_write_pin_low(MG_LED_BOOST_PIN);
+    gpio_write_pin_high(MG_LED_BOOST_PIN);
     mg_data.sleep_exec = INVALID_DEFERRED_TOKEN;
 }
 
