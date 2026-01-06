@@ -6,7 +6,9 @@
     "bootmagic": {
         "matrix": [0, 0]
     },
-    "debounce": 5,
+    "build": {
+        "lto": true
+    },
     "diode_direction": "ROW2COL",
     "eeprom": {
         "driver": "wear_leveling",
