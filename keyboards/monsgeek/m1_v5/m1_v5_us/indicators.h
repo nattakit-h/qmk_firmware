@@ -21,5 +21,5 @@
 void mg_indicators_caplock(void);
 void mg_indicators_guilock(void);
 void mg_indicators_conn_start(int32_t dev_type, bool reset);
-void mg_indicators_conn(void);
+void mg_indicators_conn(bool show_connected);
 void mg_indicators_state(void);

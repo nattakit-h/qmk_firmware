@@ -6,8 +6,6 @@
 #include "indicators.h"
 
 #include "wireless.h"
-#include "usb_main.h"
-#include "lowpower.h"
 
 /*****************************************************************************/
 /*                                  Data                                     */
@@ -18,30 +16,8 @@ bool im_test_rate_flag = false;
 /* linker/wireless/lpwr_wb32.c */
 bool lower_sleep       = false;
 
-mg_config_t mg_config  = {0};
-mg_data_t   mg_data    = {0};
-
-/*****************************************************************************/
-/*                                 Config                                    */
-/*****************************************************************************/
-
-void mg_config_write(void) {
-    eeconfig_update_kb(mg_config.raw);
-}
-
-void mg_config_default(void) {
-    mg_config = (mg_config_t){0};
-    mg_config.initialized = true;
-    mg_config.devs = DEVS_USB;
-    mg_config_write();
-}
-
-void mg_config_init(void) {
-    mg_config.raw = eeconfig_read_kb();
-    if (!mg_config.raw) {
-        mg_config_default();
-    }
-}
+extern mg_data_t mg_data;
+extern mg_config_t mg_config;
 
 /*****************************************************************************/
 /*                             Initialization                                */
@@ -217,7 +193,7 @@ void housekeeping_task_user(void) {
 bool rgb_matrix_indicators_kb(void) {
     mg_indicators_caplock();
     mg_indicators_guilock();
-    mg_indicators_conn();
+    mg_indicators_conn(false);
     mg_indicators_state();
 
     return true;
@@ -237,91 +213,4 @@ void suspend_wakeup_init_kb(void) {
 
     wireless_devs_change(wireless_get_current_devs(), wireless_get_current_devs(), false);
     suspend_wakeup_init_user();
-}
-
-/*****************************************************************************/
-/*                          WestBerry Overrides                              */
-/*****************************************************************************/
-
-void usb_power_connect(void) {
-    gpio_write_pin_low(MG_USB_POWER_PIN);
-}
-
-void usb_power_disconnect(void) {
-    gpio_write_pin_high(MG_USB_POWER_PIN);
-}
-
-void wireless_devs_change_kb(uint8_t old_devs, uint8_t new_devs, bool reset) {
-    if (mg_config.devs != wireless_get_current_devs()) {
-        mg_config.devs = wireless_get_current_devs();
-        mg_config_write();
-    }
-
-    mg_indicators_conn_start(new_devs, false);
-}
-
-void wireless_post_task(void) {
-    if (mg_data.timestamp_init && timer_elapsed32(mg_data.timestamp_init) >= 100) {
-        md_send_devctrl(MD_SND_CMD_DEVCTRL_FW_VERSION);
-        md_send_devctrl(MD_SND_CMD_DEVCTRL_SLEEP_BT_EN);
-        md_send_devctrl(MD_SND_CMD_DEVCTRL_SLEEP_2G4_EN);
-        wireless_devs_change(!mg_config.devs, mg_config.devs, false);
-        mg_data.timestamp_init = 0;
-    }
-}
-
-bool lpwr_is_allow_timeout_hook(void) {
-    if (wireless_get_current_devs() == DEVS_USB) {
-        return false;
-    }
-
-    return true;
-}
-
-bool lpwr_is_allow_presleep_hook(void) {
-    if ((wireless_get_current_devs() == DEVS_USB) && !mg_data.usb_inserted) {
-
-        if (USB_DRIVER.state != USB_STOP) {
-            usb_power_disconnect();
-            usbDisconnectBus(&USBD1);
-            usbStop(&USBD1);
-        }
-    }
-    return true;
-}
-
-void lpwr_exti_init_hook(void) {
-    gpio_set_pin_input(MG_USB_INSERT_PIN);
-    waitInputPinDelay();
-    palEnableLineEvent(MG_USB_INSERT_PIN, PAL_EVENT_MODE_RISING_EDGE);
-
-    setPinInput(ENCODER_B_PIN);
-    waitInputPinDelay();
-    palEnableLineEvent(ENCODER_B_PIN, PAL_EVENT_MODE_RISING_EDGE);
-}
-
-
-void lpwr_stop_hook_pre(void) {
-    gpio_write_pin_low(MG_LED_POWER_PIN);
-    gpio_write_pin_low(MG_LED_BOOST_PIN);
-    gpio_write_pin_low(A9); // HACK: unknown pin
-}
-
-void lpwr_wakeup_hook(void) {
-    gpio_write_pin_high(MG_LED_POWER_PIN);
-    gpio_write_pin_high(MG_LED_BOOST_PIN);
-    mg_data.sleep_exec = INVALID_DEFERRED_TOKEN;
-}
-
-void palcallback_cb(uint8_t line) {
-    switch (line) {
-        case PAL_PAD(MG_USB_INSERT_PIN): {
-            lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_CABLE);
-        } break;
-        case PAL_PAD(ENCODER_B_PIN): {
-            lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_ENCODER);
-        } break;
-        default: {
-        } break;
-    }
 }

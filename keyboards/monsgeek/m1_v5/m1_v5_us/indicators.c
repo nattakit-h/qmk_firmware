@@ -1,9 +1,11 @@
 #include "indicators.h"
+
 #include "data.h"
+#include "connection.h"
+#include "rgb_indices.h"
 
 #include "quantum.h"
 #include "wireless.h"
-#include "usb_main.h"
 
 #define set_rgb(INDEX, RGB)   \
     do {                      \
@@ -51,13 +53,7 @@ static void mg_indicators_conn_set(uint8_t index, rgb_t rgb, uint32_t interval) 
 }
 
 bool mg_indicators_conn_repeat(void) {
-    // usb connected
-    if (wireless_get_current_devs() == DEVS_USB && USB_DRIVER.state == USB_ACTIVE) {
-        return false;
-    }
-
-    // wireless connected
-    if (*md_getp_state() == MD_STATE_CONNECTED) {
+    if (mg_connection_actived()) {
         return false;
     }
 
@@ -90,7 +86,7 @@ void mg_indicators_conn_start(int32_t dev_type, bool reset) {
     }
 }
 
-void mg_indicators_conn(void) {
+void mg_indicators_conn(bool show_connected) {
     if (mg_indicators_conn_timer != 0) {
         // interval elapsed
         if (timer_elapsed32(mg_indicators_conn_timer) >= mg_indicators_conn_interval) {
@@ -115,6 +111,22 @@ void mg_indicators_conn(void) {
             set_rgb_s(mg_indicators_conn_index, mg_indicators_conn_rgb);
         } else {
             set_rgb(mg_indicators_conn_index, RGB_BLACK);
+        }
+    } else if (show_connected) {
+        switch (wireless_get_current_devs()) {
+            case DEVS_2G4: {
+                set_rgb(MG_INDICATORS_CONN_INDEX, MG_INDICATORS_CONN_2G4);
+            } break;
+            case DEVS_USB: {
+                set_rgb(MG_INDICATORS_CONN_INDEX, MG_INDICATORS_CONN_USB);
+            } break;
+            case DEVS_BT1:
+            case DEVS_BT2:
+            case DEVS_BT3: {
+                set_rgb(MG_INDICATORS_CONN_INDEX, MG_INDICATORS_CONN_BT);
+            } break;
+            default: {
+            } break;
         }
     }
 }
@@ -146,20 +158,12 @@ void mg_indicators_state(void) {
         }
     }
 
-    switch (wireless_get_current_devs()) {
-        case DEVS_2G4: {
-            set_rgb(MG_INDICATORS_CONN_INDEX, MG_INDICATORS_CONN_2G4);
-        } break;
-        case DEVS_USB: {
-            set_rgb(MG_INDICATORS_CONN_INDEX, MG_INDICATORS_CONN_USB);
-        } break;
-        case DEVS_BT1:
-        case DEVS_BT2:
-        case DEVS_BT3: {
-            set_rgb(MG_INDICATORS_CONN_INDEX, MG_INDICATORS_CONN_BT);
-        } break;
-        default: {
-        } break;
+    mg_indicators_conn(true);
+
+    const uint8_t conn_state_indicator = KX_MINS;
+    if (mg_connection_actived()) {
+        set_rgb(conn_state_indicator, RGB_GREEN);
+    } else {
+        set_rgb(conn_state_indicator, RGB_RED);
     }
 }
-
