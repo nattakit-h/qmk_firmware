@@ -7,15 +7,70 @@
 #include "quantum.h"
 #include "wireless.h"
 
-#define set_rgb(INDEX, RGB)   \
-    do {                      \
-        rgb_matrix_set_color(INDEX, ((rgb_t){RGB}).r, ((rgb_t){RGB}).g, ((rgb_t){RGB}).b); \
-    } while (0)               \
+extern mg_data_t mg_data;
 
-#define set_rgb_s(INDEX, RGB) \
-    do {                      \
-        rgb_matrix_set_color(INDEX, (RGB).r, (RGB).g, (RGB).b); \
+/*****************************************************************************/
+/*                               Definitions                                 */
+/*****************************************************************************/
+
+#define MG_INDICATORS_CONN_INDEX          KX_EQL
+#define MG_INDICATORS_CONN_INTERVAL       500
+#define MG_INDICATORS_CONN_INTERVAL_RESET 200
+#define MG_INDICATORS_CONN_BT             RGB_BLUE
+#define MG_INDICATORS_CONN_2G4            RGB_RED
+#define MG_INDICATORS_CONN_USB            RGB_WHITE
+
+#define MG_INDICATORS_BAT_CRITICAL      30
+#define MG_INDICATORS_BAT_NORMAL        RGB_GREEN
+#define MG_INDICATORS_BAT_LOW           RGB_RED
+#define MG_INDICATORS_BAT_CHARGING      RGB_BLUE
+#define MG_INDICATORS_BAT_CHARGING_DONE RGB_WHITE
+#define MG_INDICATORS_BAT_INDICES       {KX_1, KX_2, KX_3, KX_4, KX_5, KX_6, KX_7, KX_8, KX_9, KX_0}
+
+#define MG_INDICATORS_TIMEOUT           3000
+
+#define set_rgb(INDEX, RGB)                                                                 \
+    do {                                                                                    \
+        rgb_matrix_set_color(INDEX, ((rgb_t){RGB}).r, ((rgb_t){RGB}).g, ((rgb_t){RGB}).b);  \
+        mg_data.timestamp_rgb_timeout = timer_read32();                                     \
     } while (0)
+
+#define set_rgb_s(INDEX, RGB)                                    \
+    do {                                                         \
+        rgb_matrix_set_color(INDEX, (RGB).r, (RGB).g, (RGB).b);  \
+        mg_data.timestamp_rgb_timeout = timer_read32();          \
+    } while (0)
+
+#define set_rgb_off(INDEX)                    \
+    do {                                      \
+        rgb_matrix_set_color(INDEX, 0, 0, 0); \
+    } while (0)
+
+/*****************************************************************************/
+/*                               Processing                                  */
+/*****************************************************************************/
+
+
+void mg_indicators_caplock(void);
+void mg_indicators_guilock(void);
+void mg_indicators_conn(bool show_connected);
+void mg_indicators_state(void);
+
+void mg_process_indicators(void) {
+    mg_indicators_caplock();
+    mg_indicators_guilock();
+    mg_indicators_conn(false);
+    mg_indicators_state();
+
+    // handle rgb sleep state
+    if (rgb_matrix_get_suspend_state()) {
+        if (timer_elapsed32(mg_data.timestamp_rgb_timeout) < MG_INDICATORS_TIMEOUT) {
+            rgb_matrix_set_suspend_state(false);
+        }
+    } else if (timer_elapsed32(mg_data.timestamp_rgb_timeout) > MG_INDICATORS_TIMEOUT) {
+        rgb_matrix_set_suspend_state(true);
+    }
+}
 
 /*****************************************************************************/
 /*                            Basic Indicators                               */
@@ -110,7 +165,7 @@ void mg_indicators_conn(bool show_connected) {
         if (mg_indicators_conn_times % 2) {
             set_rgb_s(mg_indicators_conn_index, mg_indicators_conn_rgb);
         } else {
-            set_rgb(mg_indicators_conn_index, RGB_BLACK);
+            set_rgb_off(mg_indicators_conn_index);
         }
     } else if (show_connected) {
         switch (wireless_get_current_devs()) {
@@ -144,17 +199,17 @@ void mg_indicators_state(void) {
     const uint8_t mg_indicators_battery_indices[] = MG_INDICATORS_BAT_INDICES;
     for (uint8_t i = 0; i < ARRAY_SIZE(mg_indicators_battery_indices); i++) {
         if ((i < (*md_getp_bat() / 10)) || (i == 0)) {
-                if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING) {
-                    set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_CHARGING);
-                } else if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING_DONE) {
-                    set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_CHARGING_DONE);
-                } else if (*md_getp_bat() >= (MG_INDICATORS_BAT_CRITICAL)) {
-                    set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_NORMAL);
-                } else {
-                    set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_LOW);
-                }
+            if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING) {
+                set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_CHARGING);
+            } else if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING_DONE) {
+                set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_CHARGING_DONE);
+            } else if (*md_getp_bat() >= (MG_INDICATORS_BAT_CRITICAL)) {
+                set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_NORMAL);
             } else {
-                set_rgb(mg_indicators_battery_indices[i], RGB_OFF);
+                set_rgb(mg_indicators_battery_indices[i], MG_INDICATORS_BAT_LOW);
+            }
+        } else {
+            set_rgb_off(mg_indicators_battery_indices[i]);
         }
     }
 

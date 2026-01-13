@@ -58,6 +58,10 @@
         "animations": {
             "solid_color": true
         },
+        "default": {
+            "animation": "solid_color",
+            "val": 0
+        },
         "driver": "ws2812",
         "layout": [
             {"matrix": [5,  9], "x": 144, "y": 64, "flags": 4},
@@ -144,11 +148,8 @@
             {"matrix": [5,  6], "x": 96,  "y": 64, "flags": 4}
         ],
         "max_brightness": 104,
+        "timeout": 0,
         "val_steps": 13,
-        "default": {
-            "animation": "solid_color",
-            "val": 0
-        },
         "sleep": true
     },
     "tap_keycode_delay": 10,

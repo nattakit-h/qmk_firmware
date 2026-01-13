@@ -107,7 +107,7 @@ bool mg_process_record_connect(uint16_t keycode, keyrecord_t *record) {
 }
 
 uint32_t mg_process_record_sleep_callback(uint32_t trigger_time, void *cb_arg) {
-    lpwr_set_state(LPWR_STOP);
+    lpwr_set_state(LPWR_PRESLEEP);
     return 0;
 }
 
@@ -172,7 +172,6 @@ void housekeeping_task_user(void) {
     }
 
     if (mg_data.timestamp_charge == 0 || timer_elapsed32(mg_data.timestamp_charge) > 1000) {
-
         mg_data.timestamp_charge = timer_read32();
         md_send_devctrl(mg_data.charge_state);
         md_send_devctrl(MD_SND_CMD_DEVCTRL_INQVOL);
@@ -180,23 +179,13 @@ void housekeeping_task_user(void) {
 
     if (mg_data.usb_inserted) {
         gpio_write_pin_low(MG_LED_BOOST_PIN);
-
     } else {
         gpio_write_pin_high(MG_LED_BOOST_PIN);
     }
-}
 
-/*****************************************************************************/
-/*                          RGB Matrix Overrides                             */
-/*****************************************************************************/
-
-bool rgb_matrix_indicators_kb(void) {
-    mg_indicators_caplock();
-    mg_indicators_guilock();
-    mg_indicators_conn(false);
-    mg_indicators_state();
-
-    return true;
+    // process indicators here instead of rgb_matrix_indicators_kb to handle
+    // rgb sleeping state
+    mg_process_indicators();
 }
 
 /*****************************************************************************/
