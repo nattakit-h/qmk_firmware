@@ -48,9 +48,9 @@ void wireless_devs_change_kb(uint8_t old_devs, uint8_t new_devs, bool reset) {
         mg_config_write();
     }
 
-    mg_data.timestamp_connection = timer_read32();
+    mg_data.timestamp_connect_timeout = timer_read32();
 
-    mg_indicators_conn_start(new_devs, false);
+    mg_indicators_conn_start(new_devs, reset);
 
 }
 
@@ -63,13 +63,16 @@ void wireless_post_task(void) {
         mg_data.timestamp_init = 0;
     }
 
-    /* connection timeout */
+    /* sleep timeout */
     if (mg_connection_actived()) {
-        mg_data.timestamp_connection = 0;
+        mg_data.timestamp_connect_timeout = 0;
+        if (last_input_activity_elapsed() > MG_SLEEP_TIMEOUT) {
+            lpwr_set_timeout_manual(true);
+        }
+    /* connection timeout */
     } else {
-        if (mg_data.timestamp_connection == 0 && !mg_connection_usb_actived()) {
-            mg_data.timestamp_connection = timer_read32();
-        } else if (timer_elapsed32(mg_data.timestamp_connection) >= MG_CONNECTION_TIMEOUT) {
+        if (mg_data.timestamp_connect_timeout == 0) mg_data.timestamp_connect_timeout = timer_read32();
+        if (timer_elapsed32(mg_data.timestamp_connect_timeout) >= MG_CONNECTION_TIMEOUT) {
             lpwr_set_timeout_manual(true);
         }
     }

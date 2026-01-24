@@ -18,7 +18,7 @@ typedef struct {
     uint32_t timestamp_reset;
     uint32_t timestamp_charge;
     uint32_t timestamp_rgb_timeout;
-    uint32_t timestamp_connection;
+    uint32_t timestamp_connect_timeout;
     uint8_t  charge_state;
     bool     usb_inserted;
     bool     show_info;
