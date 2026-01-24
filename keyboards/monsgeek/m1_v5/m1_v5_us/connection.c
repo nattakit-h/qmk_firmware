@@ -75,14 +75,6 @@ void wireless_post_task(void) {
     }
 }
 
-bool lpwr_is_allow_timeout_hook(void) {
-    if (wireless_get_current_devs() == DEVS_USB) {
-        return false;
-    }
-
-    return true;
-}
-
 bool lpwr_is_allow_presleep_hook(void) {
     if ((wireless_get_current_devs() == DEVS_USB) && !mg_data.usb_inserted) {
 
