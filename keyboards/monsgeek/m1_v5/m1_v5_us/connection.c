@@ -50,8 +50,20 @@ void wireless_devs_change_kb(uint8_t old_devs, uint8_t new_devs, bool reset) {
 
     mg_data.timestamp_connect_timeout = timer_read32();
 
+    // battery reading from the previous mode is stale
+    mg_data.timestamp_battery = 0;
+
     mg_indicators_conn_start(new_devs, reset);
 
+}
+
+bool md_receive_process_kb(uint8_t *pdata, uint8_t len) {
+    // stamp freshness when a battery report (0x5C) passes by,
+    // then let the vendor handler store the value
+    if (pdata[0] == MD_REV_CMD_BATVOL) {
+        mg_data.timestamp_battery = timer_read32();
+    }
+    return true;
 }
 
 void wireless_post_task(void) {
@@ -111,6 +123,9 @@ void lpwr_wakeup_hook(void) {
     gpio_write_pin_high(MG_LED_POWER_PIN);
     gpio_write_pin_high(MG_LED_BOOST_PIN);
     mg_data.sleep_exec = INVALID_DEFERRED_TOKEN;
+
+    // module re-establishes its link across sleep; old reading is stale
+    mg_data.timestamp_battery = 0;
 }
 
 void palcallback_cb(uint8_t line) {

@@ -174,7 +174,14 @@ void housekeeping_task_user(void) {
     if (mg_data.timestamp_charge == 0 || timer_elapsed32(mg_data.timestamp_charge) > 1000) {
         mg_data.timestamp_charge = timer_read32();
         md_send_devctrl(mg_data.charge_state);
-        md_send_devctrl(MD_SND_CMD_DEVCTRL_INQVOL);
+    }
+
+    // poll battery; md_inquire_bat() refuses while the smsg queue is busy,
+    // so leave the timestamp untouched and retry on the next pass
+    if (mg_data.timestamp_battery_query == 0 || timer_elapsed32(mg_data.timestamp_battery_query) > 1000) {
+        if (md_inquire_bat()) {
+            mg_data.timestamp_battery_query = timer_read32();
+        }
     }
 
     if (mg_data.usb_inserted) {

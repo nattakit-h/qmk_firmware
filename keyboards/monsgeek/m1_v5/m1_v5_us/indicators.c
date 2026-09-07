@@ -168,21 +168,27 @@ void mg_indicators_state(void) {
 
     rgb_matrix_set_color_all(0, 0, 0);
 
-    uint8_t battery = *md_getp_bat();
-    const uint8_t mg_indicators_battery_indices[] = {KX_1, KX_2, KX_3, KX_4, KX_5, KX_6, KX_7, KX_8, KX_9, KX_0};
-    for (uint8_t i = 0; i < ARRAY_SIZE(mg_indicators_battery_indices); i++) {
-        if ((i < (battery / 10)) || (i == 0)) {
-            if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING) {
-                set_rgb(mg_indicators_battery_indices[i], RGB_BLUE);
-            } else if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING_DONE) {
-                set_rgb(mg_indicators_battery_indices[i], RGB_WHITE);
-            } else if (battery >= 30) {
-                set_rgb(mg_indicators_battery_indices[i], RGB_GREEN);
+    // battery bar only with a fresh reading; unknown/stale = all off
+    const uint32_t battery_fresh_window = 10000;
+    const bool     battery_fresh        = (mg_data.timestamp_battery != 0) && (timer_elapsed32(mg_data.timestamp_battery) <= battery_fresh_window);
+
+    if (battery_fresh) {
+        uint8_t battery = *md_getp_bat();
+        const uint8_t mg_indicators_battery_indices[] = {KX_1, KX_2, KX_3, KX_4, KX_5, KX_6, KX_7, KX_8, KX_9, KX_0};
+        for (uint8_t i = 0; i < ARRAY_SIZE(mg_indicators_battery_indices); i++) {
+            if ((i < (battery / 10)) || (i == 0)) {
+                if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING) {
+                    set_rgb(mg_indicators_battery_indices[i], RGB_BLUE);
+                } else if (mg_data.charge_state == MD_SND_CMD_DEVCTRL_CHARGING_DONE) {
+                    set_rgb(mg_indicators_battery_indices[i], RGB_WHITE);
+                } else if (battery >= 30) {
+                    set_rgb(mg_indicators_battery_indices[i], RGB_GREEN);
+                } else {
+                    set_rgb(mg_indicators_battery_indices[i], RGB_RED);
+                }
             } else {
-                set_rgb(mg_indicators_battery_indices[i], RGB_RED);
+                set_rgb_off(mg_indicators_battery_indices[i]);
             }
-        } else {
-            set_rgb_off(mg_indicators_battery_indices[i]);
         }
     }
 
