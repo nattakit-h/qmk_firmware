@@ -4,8 +4,6 @@ WIRELESS_DIR = $(TOP_DIR)/keyboards/linker/wireless
 ifeq ($(strip $(WIRELESS_ENABLE)), yes)
     OPT_DEFS += -DWIRELESS_ENABLE -DNO_USB_STARTUP_CHECK
 
-    OPT_DEFS += -include $(WIRELESS_DIR)/md_raw.h
-
     UART_DRIVER_REQUIRED ?= yes
     WIRELESS_LPWR_STOP_ENABLE ?= yes
 

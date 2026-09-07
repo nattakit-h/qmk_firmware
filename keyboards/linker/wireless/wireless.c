@@ -18,6 +18,7 @@ void wireless_send_keyboard(report_keyboard_t *report);
 void wireless_send_nkro(report_nkro_t *report);
 void wireless_send_mouse(report_mouse_t *report);
 void wireless_send_extra(report_extra_t *report);
+void wireless_send_raw_hid(uint8_t *data, uint8_t length);
 
 host_driver_t wireless_driver = {
     .keyboard_leds = wireless_keyboard_leds,
@@ -25,6 +26,9 @@ host_driver_t wireless_driver = {
     .send_nkro     = wireless_send_nkro,
     .send_mouse    = wireless_send_mouse,
     .send_extra    = wireless_send_extra,
+#ifdef RAW_ENABLE
+    .send_raw_hid  = wireless_send_raw_hid,
+#endif
 };
 
 void wireless_init(void) {
@@ -198,6 +202,12 @@ void wireless_send_extra(report_extra_t *report) {
         }
     }
 }
+
+#ifdef RAW_ENABLE
+void wireless_send_raw_hid(uint8_t *data, uint8_t length) {
+    md_send_raw(data, length);
+}
+#endif
 
 void wireless_devs_change_user(uint8_t old_devs, uint8_t new_devs, bool reset) __attribute__((weak));
 void wireless_devs_change_user(uint8_t old_devs, uint8_t new_devs, bool reset) {}
