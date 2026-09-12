@@ -161,6 +161,11 @@ static void md_receive_msg_task(void) {
 
                 // raw data
                 if ((md_rev_payload[0] == MD_REV_CMD_RAW) && (md_rev_payload[1] == MD_REV_CMD_RAW_OUT)) {
+                    if (data > MD_RAW_SIZE) {
+                        data_count  = 0;
+                        data_remain = 0;
+                        continue;
+                    }
                     md_rev_payload[data_count++] = data;
                     data_remain                  = data + 1;
                     continue;
@@ -180,6 +185,8 @@ static void md_receive_msg_task(void) {
             md_send_ack();
 
             if (md_receive_process_kb(md_rev_payload, data_count) != true) {
+                data_count  = 0;
+                data_remain = 0;
                 return;
             }
 
@@ -241,7 +248,6 @@ static void md_send_pkt_task(void) {
     switch (smsg_get_state()) {
         case smsg_state_busy: {
             if (sync_timer_elapsed32(smsg_timer) > (MD_SNED_PKT_TIMEOUT)) {
-                smsg_retry = 0;
                 smsg_set_state(smsg_state_retry);
             }
         } break;
