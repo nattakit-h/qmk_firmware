@@ -44,3 +44,7 @@
 /* WS2812 */
 #define WS2812_SPI_DRIVER                   SPIDM2
 #define WS2812_SPI_DIVISOR                  32
+
+/* RGB is indicator-only; block RM_* keycodes so VIA cannot switch it out of
+ * the black solid effect into a decorative animation */
+#define RGB_MATRIX_DISABLE_SHARED_KEYCODES
