@@ -41,10 +41,12 @@ void mg_indicators_conn(bool show_connected);
 void mg_indicators_state(void);
 
 void mg_process_indicators(void) {
-    mg_indicators_caplock();
-    mg_indicators_guilock();
     mg_indicators_conn(false);
     mg_indicators_state();
+
+    // draw the locks after the state overlay so its wipe does not erase them
+    mg_indicators_caplock();
+    mg_indicators_guilock();
 
     // handle rgb sleep state
     const int32_t timeout = 3000;
@@ -62,15 +64,29 @@ void mg_process_indicators(void) {
 /*****************************************************************************/
 
 void mg_indicators_caplock(void) {
-    if (host_keyboard_led_state().caps_lock) {
+    static bool prev_caps = false;
+    bool        caps      = host_keyboard_led_state().caps_lock;
+
+    if (caps) {
         set_rgb(KX_CAPS, RGB_WHITE);
+    } else if (prev_caps) {
+        set_rgb_off(KX_CAPS);
     }
+
+    prev_caps = caps;
 }
 
 void mg_indicators_guilock(void) {
-    if (keymap_config.no_gui) {
+    static bool prev_gui = false;
+    bool        gui      = keymap_config.no_gui;
+
+    if (gui) {
         set_rgb(KX_LGUI, RGB_WHITE);
+    } else if (prev_gui) {
+        set_rgb_off(KX_LGUI);
     }
+
+    prev_gui = gui;
 }
 
 /*****************************************************************************/
