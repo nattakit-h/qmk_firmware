@@ -129,9 +129,17 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 bootloader_jump();
             }
         } break;
-        case MG_TEST: {
-            if (record->event.pressed && mg_data.sleep_exec == INVALID_DEFERRED_TOKEN) {
+        case MG_SLP: {
+            // refuse in USB-active: the host holds the board awake there
+            if (record->event.pressed && !mg_connection_usb_actived() && mg_data.sleep_exec == INVALID_DEFERRED_TOKEN) {
                 mg_data.sleep_exec = defer_exec(500, mg_process_record_sleep_callback, NULL);
+            }
+            return false;
+        } break;
+        case MG_DBG: {
+            // toggle the always-on status overlay
+            if (record->event.pressed) {
+                mg_data.debug_mode = !mg_data.debug_mode;
             }
             return false;
         } break;

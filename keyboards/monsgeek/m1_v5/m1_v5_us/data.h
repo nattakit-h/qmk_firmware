@@ -25,6 +25,7 @@ typedef struct {
     uint8_t  charge_state;
     bool     usb_inserted;
     bool     show_info;
+    bool     debug_mode;
     deferred_token sleep_exec;
 } mg_data_t;
 

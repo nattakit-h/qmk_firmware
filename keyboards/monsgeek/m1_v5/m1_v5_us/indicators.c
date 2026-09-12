@@ -164,7 +164,8 @@ void mg_indicators_conn(bool show_connected) {
 
 void mg_indicators_state(void) {
     extern mg_data_t mg_data;
-    if (!mg_data.show_info) return;
+    // show the overlay while the info key is held, or continuously in debug mode
+    if (!mg_data.show_info && !mg_data.debug_mode) return;
 
     rgb_matrix_set_color_all(0, 0, 0);
 

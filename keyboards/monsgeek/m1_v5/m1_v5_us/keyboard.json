@@ -44,7 +44,8 @@
         {"key": "MG_2G4"},
         {"key": "MG_USB"},
         {"key": "MG_INFO"},
-        {"key": "MG_TEST"}
+        {"key": "MG_SLP"},
+        {"key": "MG_DBG"}
     ],
     "dynamic_keymap": {
         "layer_count": 5
