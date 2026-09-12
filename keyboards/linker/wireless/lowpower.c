@@ -25,13 +25,7 @@
     #include "touch.h"
 #endif
 
-#ifdef GPIO_UART_ENABLE
-#include "iprint.h"
-#include <stdarg.h>
-#define DEBUG(fmt, ...) iprintf(fmt, ##__VA_ARGS__)
-#else
 #define DEBUG(fmt, ...)
-#endif
 
 static lpwr_state_t lpwr_state       = LPWR_NORMAL;
 static lpwr_mode_t lpwr_mode         = LPWR_MODE_TIMEOUT;
