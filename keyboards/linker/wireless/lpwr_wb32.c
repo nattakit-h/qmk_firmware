@@ -113,7 +113,6 @@ void lpwr_exti_init(void) {
     }
 #endif
     palEnableLineEvent(A12,PAL_EVENT_MODE_RISING_EDGE);
-    nvicEnableVector(USBP_WKUP_IRQn,6);
     lpwr_exti_init_hook();
 
     /* IRQ subsystem initialization.*/
@@ -220,8 +219,8 @@ void wb32_stop_mode(void) {
     EXTI->PR = 0x7FFFF;
     for (uint8_t i = 0; i < 8; i++) {
         for (uint8_t j = 0; j < 32; j++) {
-            if (NVIC->ISPR[i] & (0x01UL < j)) {
-                NVIC->ICPR[i] = (0x01UL < j);
+            if (NVIC->ISPR[i] & (0x01UL << j)) {
+                NVIC->ICPR[i] = (0x01UL << j);
             }
         }
     }
