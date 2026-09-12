@@ -55,6 +55,9 @@
         "rows": ["A0", "A1", "A2", "A3", "A4", "C13"]
     },
     "processor": "WB32FQ95",
+    "qmk": {
+        "tap_keycode_delay": 10
+    },
     "rgb_matrix": {
         "animations": {
             "solid_color": true
@@ -153,7 +156,6 @@
         "val_steps": 13,
         "sleep": true
     },
-    "tap_keycode_delay": 10,
     "usb": {
         "device_version": "0.3.0",
         "pid": "0xE4C5",
