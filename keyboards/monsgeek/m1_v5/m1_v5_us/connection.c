@@ -72,6 +72,11 @@ void wireless_post_task(void) {
         md_send_devctrl(MD_SND_CMD_DEVCTRL_SLEEP_BT_EN);
         md_send_devctrl(MD_SND_CMD_DEVCTRL_SLEEP_2G4_EN);
         wireless_devs_change(!mg_config.devs, mg_config.devs, false);
+        // protocol_post_init() re-installs chibios_driver after boot, and the
+        // re-select above can't fix it (set_transport is a no-op here)
+        if (get_transport() == TRANSPORT_WLS) {
+            wls_transport_enable(true);
+        }
         mg_data.timestamp_init = 0;
     }
 
