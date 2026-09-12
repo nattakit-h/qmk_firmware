@@ -196,9 +196,11 @@ void mg_indicators_state(void) {
     mg_indicators_conn(true);
 
     const uint8_t conn_state_indicator = KX_MINS;
-    if (mg_connection_actived()) {
-        set_rgb(conn_state_indicator, RGB_GREEN);
-    } else {
+    if (!mg_connection_actived()) {
         set_rgb(conn_state_indicator, RGB_RED);
+    } else if (!keymap_config.nkro) {
+        set_rgb(conn_state_indicator, RGB_GOLD);
+    } else {
+        set_rgb(conn_state_indicator, RGB_GREEN);
     }
 }
