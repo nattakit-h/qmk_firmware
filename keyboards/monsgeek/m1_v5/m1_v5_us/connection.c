@@ -107,7 +107,7 @@ void lpwr_exti_init_hook(void) {
     waitInputPinDelay();
     palEnableLineEvent(MG_USB_INSERT_PIN, PAL_EVENT_MODE_RISING_EDGE);
 
-    setPinInput(ENCODER_B_PIN);
+    gpio_set_pin_input_high(ENCODER_B_PIN);
     waitInputPinDelay();
     palEnableLineEvent(ENCODER_B_PIN, PAL_EVENT_MODE_RISING_EDGE);
 }
@@ -117,6 +117,39 @@ void lpwr_stop_hook_pre(void) {
     gpio_write_pin_low(MG_LED_POWER_PIN);
     gpio_write_pin_low(MG_LED_BOOST_PIN);
     gpio_write_pin_low(A9); // HACK: unknown pin
+}
+
+// direction of the detent that woke the board, from the wake ISR
+static bool encoder_wake_clockwise = false;
+
+// set by the encoder wake ISR. Not keyed off lpwr_wakeupcd: a UART edge can
+// overwrite that to LPWR_WAKEUP_UART and drop the board back to stop.
+static volatile bool encoder_wake_seen = false;
+
+// held until the link is live, then injected (else the report is dropped)
+static volatile bool encoder_pending_dir = false;
+static volatile bool encoder_pending     = false;
+
+void lpwr_stop_hook_post(void) {
+    if (encoder_wake_seen) {
+        encoder_wake_seen = false;
+        encoder_init(); // resync to present pins
+        // inject only if already at rest (detent finished during sleep);
+        // otherwise the driver emits it when the detent completes
+        if (gpio_read_pin(ENCODER_A_PIN) && gpio_read_pin(ENCODER_B_PIN)) {
+            encoder_pending_dir = encoder_wake_clockwise;
+            encoder_pending     = true;
+        }
+    }
+}
+
+// inject the held detent once connected, so the report isn't dropped
+void encoder_deliver_pending(void) {
+    if (!encoder_pending || !mg_connection_actived()) {
+        return;
+    }
+    encoder_pending = false;
+    encoder_queue_event(0, encoder_pending_dir);
 }
 
 void lpwr_wakeup_hook(void) {
@@ -129,14 +162,14 @@ void lpwr_wakeup_hook(void) {
 }
 
 void palcallback_cb(uint8_t line) {
-    switch (line) {
-        case PAL_PAD(MG_USB_INSERT_PIN): {
-            lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_CABLE);
-        } break;
-        case PAL_PAD(ENCODER_B_PIN): {
-            lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_ENCODER);
-        } break;
-        default: {
-        } break;
+    // if/else rather than switch: ENCODER_B_PIN is a compound literal, not an
+    // integer constant expression, so it can't be a case label
+    if (line == PAL_PAD(MG_USB_INSERT_PIN)) {
+        lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_CABLE);
+    } else if (line == PAL_PAD(ENCODER_B_PIN)) {
+        lpwr_set_sleep_wakeupcd(LPWR_WAKEUP_ENCODER);
+        encoder_wake_seen = true;
+        // at a B-rising edge A is stable: A=1 is clockwise (see encoder_LUT)
+        encoder_wake_clockwise = (gpio_read_pin(ENCODER_A_PIN) != 0);
     }
 }

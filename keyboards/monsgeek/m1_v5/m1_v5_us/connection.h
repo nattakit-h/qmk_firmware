@@ -7,3 +7,6 @@
 
 bool mg_connection_actived(void);
 bool mg_connection_usb_actived(void);
+
+// inject the detent that woke the board, once the link is live
+void encoder_deliver_pending(void);

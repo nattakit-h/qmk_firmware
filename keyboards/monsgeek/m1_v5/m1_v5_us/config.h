@@ -26,7 +26,10 @@
 
 /* Encoder */
 #define ENCODER_MAP_KEY_DELAY               1
-#define ENCODER_B_PIN                       B6
+#define ENCODER_A_PIN                       ((pin_t[])ENCODER_A_PINS)[0]
+#define ENCODER_B_PIN                       ((pin_t[])ENCODER_B_PINS)[0]
+// fire on return to rest; without this the first detent after a reversal is lost
+#define ENCODER_DEFAULT_POS                 0x3
 
 /* SPI */
 #define SPI_DRIVER                          SPIDQ

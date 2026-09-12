@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include QMK_KEYBOARD_H
+#include "connection.h"
 #include "data.h"
 #include "indicators.h"
 
@@ -189,6 +190,8 @@ void housekeeping_task_user(void) {
     } else {
         gpio_write_pin_high(MG_LED_BOOST_PIN);
     }
+
+    encoder_deliver_pending();
 
     // process indicators here instead of rgb_matrix_indicators_kb to handle
     // rgb sleeping state
