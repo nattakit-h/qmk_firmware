@@ -57,8 +57,11 @@ void usb_transport_enable(bool enable) {
         }
     } else {
         if (USB_DRIVER.state == USB_ACTIVE) {
-            chibios_driver.send_keyboard(NULL);
-            chibios_driver.send_nkro(NULL);
+            report_keyboard_t empty_kb   = {0};
+            report_nkro_t     empty_nkro = {0};
+
+            chibios_driver.send_keyboard(&empty_kb);
+            chibios_driver.send_nkro(&empty_nkro);
         }
 
 #if !defined(KEEP_USB_CONNECTION_IN_WIRELESS_MODE)
