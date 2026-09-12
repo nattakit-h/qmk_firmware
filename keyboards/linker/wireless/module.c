@@ -395,7 +395,7 @@ void md_send_devinfo(const char *name) {
 
     memcpy(&sdata[2], name, infolen);
     md_calc_check_sum(sdata, infolen + 2);
-    smsg_push(sdata, sizeof(sdata));
+    smsg_push(sdata, infolen + 3);
 }
 
 void md_send_devctrl(uint8_t cmd) {
