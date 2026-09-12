@@ -187,7 +187,7 @@ void housekeeping_task_user(void) {
 
     // poll battery; md_inquire_bat() refuses while the smsg queue is busy,
     // so leave the timestamp untouched and retry on the next pass
-    if (mg_data.timestamp_battery_query == 0 || timer_elapsed32(mg_data.timestamp_battery_query) > 1000) {
+    if (mg_data.timestamp_battery_query == 0 || timer_elapsed32(mg_data.timestamp_battery_query) > 3000) {
         if (md_inquire_bat()) {
             mg_data.timestamp_battery_query = timer_read32();
         }

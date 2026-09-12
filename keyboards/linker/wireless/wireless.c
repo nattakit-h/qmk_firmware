@@ -5,10 +5,6 @@
 #include "quantum.h"
 #include "wireless.h"
 
-#ifndef WLS_INQUIRY_BAT_TIME
-#    define WLS_INQUIRY_BAT_TIME 3000
-#endif
-
 static uint8_t wls_devs = DEVS_USB;
 
 void last_matrix_activity_trigger(void);
@@ -303,14 +299,6 @@ void wireless_task(void) {
      */
     if (get_transport() == TRANSPORT_USB) {
         usb_remote_wakeup();
-    } else if (lpwr_get_state() == LPWR_NORMAL) {
-        static uint32_t inqtimer = 0x00;
-
-        if (sync_timer_elapsed32(inqtimer) >= (WLS_INQUIRY_BAT_TIME)) {
-            if (md_inquire_bat()) {
-                inqtimer = sync_timer_read32();
-            }
-        }
     }
 }
 
