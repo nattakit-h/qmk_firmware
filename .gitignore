@@ -128,3 +128,7 @@ compile_commands.json
 #via*.json
 #/keyboards/**/keymaps/via/*
 #/keyboards/**/keymaps/vial/*
+
+# Local LLM instructions and scratch notes
+AGENTS.md
+.tmp/
